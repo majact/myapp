@@ -2,6 +2,7 @@
 import requests  # HTTP requests library
 import pandas as pd  # Data manipulation library
 from urllib.parse import urlencode
+
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
 
@@ -366,7 +367,7 @@ def check_proposed_name(proposed_name):
     if not disapproved:
         relevant_name_start = matches_namestart(proposed_name, name_starts)
         conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities = detect_conflicts(
-            proposed_name, relevant_name_start, existing_data
+            proposed_name, relevant_name_start, api_url
         )
 
         # Format the conflict results if there are conflicts

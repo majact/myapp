@@ -1,6 +1,8 @@
-import requests
-import pandas as pd
 import streamlit as st
+import requests
+
+# Streamlit App Title
+st.title("Test App: Fetching Feature Layer Data")
 
 # URL for the public feature layer
 layer_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
@@ -12,19 +14,24 @@ params = {
     "f": "json"       # Return data in JSON format
 }
 
-# Fetch data from the feature layer
-try:
-    response = requests.get(layer_url, params=params)
-    response.raise_for_status()  # Raise an exception for HTTP errors
-    data = response.json()
+# Button to trigger data fetch
+if st.button("Fetch Data"):
+    try:
+        # Fetch data from the feature layer
+        response = requests.get(layer_url, params=params)
+        response.raise_for_status()  # Raise an exception for HTTP errors
 
-    # Convert features to a Pandas DataFrame
-    features = data["features"]
-    attributes = [feature["attributes"] for feature in features]
-    existing_data = pd.DataFrame(attributes)
+        # Show success message
+        st.success("Data fetched successfully!")
+        
+        # Parse and display a portion of the data
+        data = response.json()
+        if "features" in data:
+            st.write(f"Number of records fetched: {len(data['features'])}")
+            # Display the first record as an example
+            st.json(data["features"][0])
+        else:
+            st.warning("No features found in the response.")
 
-    st.success("Street data loaded successfully.")
-    st.write(existing_data.head())  # Display a sample of the data
-
-except requests.RequestException as e:
-    st.error(f"Error fetching data: {e}")
+    except requests.RequestException as e:
+        st.error(f"Error fetching data: {e}")

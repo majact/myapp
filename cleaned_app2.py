@@ -20,3 +20,270 @@ if response.status_code == 200:
     print("Street data loaded successfully.")
 else:
     print(f"Failed to load data. Status code: {response.status_code}")
+
+
+
+# Lists for disallowed names based on category (e.g., business, city, county, arterial)
+# These lists will be used later in the script to filter out unwanted names
+
+# Placeholder for disallowed business names (currently empty)
+business_names = []
+
+# Cities and counties with restricted names for street data
+city_names = ['BEAVERTON', 'TIGARD']
+county_names = ['MALHEUR']
+
+# Common arterial street names that should be excluded
+arterial_names = [
+    "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARNES", "BASELINE",
+    "BEAVERCREEK", "BEEF BEND", "BELMONT", "BERTHA", "BOECKMAN", "BONITA", "BOONE", "BORLAND",
+    "BROOKWOOD", "BROADWAY", "BURNSIDE", "CANYON", "CAPITOL", "CHILDS", "CORNELIUS", "CORNELL",
+    "COUNTRY CLUB", "DAVIS", "DENVER", "DIVISION", "ELLIGSEN", "EVERGREEN", "FARMINGTON", "FLAVEL",
+    "FOSTER", "GAARDE", "GALES", "GERMANTOWN", "GLENCOE", "GLISAN", "GRABHORN", "GRAHAM", "GRAND",
+    "GREENBURG", "GREENBERG", "HALL", "HALSEY", "HART", "HAWTHORNE", "HELVETIA", "INTERSTATE",
+    "JACKSON", "JENKINS", "JOHNSON CREEK", "KANE", "KAISER", "KILLINGSWORTH", "KRUSE", "LAIDLAW",
+    "LARCH MOUNTAIN", "LOMBARD", "MACADAM", "MAIN", "MARINE", "MARKET", "MARTIN LUTHER KING JR",
+    "MCDONALD", "MINTER", "MURRAY", "NAITO", "OLESON", "PACIFIC", "POWELL", "REDLAND", "RIVER",
+    "RIVERSIDE", "ROSS ISLAND", "SALTZMAN", "SANDY", "SCHOLLS", "SCHOLLS FERRY", "SELLWOOD",
+    "SKYLINE", "SPRINGVILLE", "SPRINGWATER", "ST JOHNS", "STAFFORD", "STARK", "SUNNYBROOK",
+    "SUNNYSIDE", "TACOMA", "TAYLORS", "THOMPSON", "TONGUE", "TONQUIN", "TOWN CENTER", "WALKER",
+    "WATSON", "WEIDLER", "WOODSTOCK", "ZION"
+]
+
+# Names that should be avoided if they start with these prefixes
+banned_name_starts = ["HILL", "BEAVER", "ALDER", "CEDAR", "MAPLE", "OAK", "HALL", "MAIN", "MT", "PACIFIC", "PARK", "ST ", "WALNUT", "WILLAMETTE"]
+
+# Lists for checking specific name components
+cardinal_names = ["NORTH", "SOUTH", "EAST", "WEST"]  # Cardinal directions
+usps_names = ["AVENUE", "PLACE", "WAY", "TERRACE", "DRIVE", "STREET"]  # USPS street types
+
+# Common name starts that might be excluded due to duplication or ambiguity
+name_starts = [
+    "GREEN", "BLUE", "WHITE", "BROWN", "BLACK", "RED", "YELLOW", "PURPLE", "GREY", "GRAY", "ORANGE",
+    "ALBERT", "ALEX", "ALTA", "ARCH", "ASH", "BASE", "BAY", "BEAVER", "BEEF", "BELL", "BERNARD",
+    "BIG", "BOONE", "BOUND", "BOX", "BRAD", "BRAN", "BROWN", "BRIGHT", "BROOK", "BRUN", "BUCK",
+    "BUTTER", "CANYON", "CHAT", "CHERRY", "CHURCH", "CLARK", "CLAY", "CLEAR", "CLIFF", "CLOUD",
+    "CLOVER", "COLD", "COOL", "COPPER", "CORN", "CROSS", "DALE", "DAWN", "DEEP", "DEER", "DOUBLE",
+    "DRAKE", "DRIFT", "DUCK", "EAGLE", "ELDER", "ELK", "END", "EVER", "FAIR", "FARM", "FAVOR",
+    "FELD", "FERN", "FIDDLE", "FIRE", "FISH", "FLAG", "FLAT", "FLINT", "FREE", "GARDEN", "GERMAN",
+    "GLAD", "GLEN", "GOLD", "GOOD", "GRANT", "GRAPE", "GUM", "HAGGER", "HANDY", "HATCH", "HAY",
+    "HIGH", "HITCH", "HOLLY", "IRON", "JACK", "JOY", "KENT", "KIND", "KING", "KIRK",
+    "KITTY", "LADY", "LAKE", "LARK", "LEATHER", "LEMON", "LEVEL", "LEWIS", "LIME", "LIVER",
+    "LOCK", "LONG", "LOYAL", "MARSH", "MARTIN", "MASON", "MASTER", "MATCH", "MAY", "MORGAN",
+    "MORNING", "MOUNTAIN", "NETHER", "NEW", "NIGHT", "OAT", "OLD", "OVER", "OX", "PATTER", "PENNY",
+    "PEPPER", "PERFECT", "PINE", "PLANT", "PLAY", "QUEEN", "QUICK", "QUIN", "RAMS", "RED", "RENEW",
+    "REX", "RICH", "RING", "RIVER", "ROAD", "ROBERT", "ROCK", "ROUND", "SAGE", "SAIL", "SHAKER",
+    "SHOW", "SILVER", "SINGLE", "SKY", "SPRING", "STAMP", "STAN", "STAR", "STILL", "STOCK",
+    "SUN", "SUNNY", "TOAST", "TOM", "TOWER", "TOWN", "UNDER", "UP", "VALEN", "VANDER", "WALK",
+    "WASH", "WATER", "WELL", "WILLIAM", "WILSON", "WINK", "WISE", "WISH", "WOLF", "WONDER", "WOOD",
+    "YORK"
+]
+
+repeated_letter_exceptions = {"AGREE", "WELL", "BUTTER", "AGREEMENT", "TREE", "WOOD", "BELL", "WHEEL",
+                              "PEPPER", "APPLE", "MILL", "CRESS", "STILL", "FALL", "PENNY", "PATTER", "BOOK",
+                              "CROSS", "MOOSE", "MELLOW", "MAMMOTH", "POOL", "BERRY", "KITTY", "JOLLY", "HUGG",
+                              "HOOVER", "HAGGER", "GULL", "FREE", "DUFF", "BILL", "DEEP", "LESS", "CHOPP", "CLAPP",
+                              "CLIFF", "PASS", "COOL", "COPPER", "DELL", "COSTELLO", "BROOK", "DANNER", "NESS",
+                              "GOOD", "STALL", "SUCCESS", "VANILLA", "YARNELL", "ZIPPER", "HILL"}
+problematic_combination_exceptions = {"FIELD", "BOUND", "DUCK", "BUCK"}
+usps_street_type_exceptions = {"SPARK"}
+ends_with_exceptions = {"VALE", "DALE", "SAFARI", "ABLE"}
+
+# Disallowed endings
+disallowed_ends_with = ("I", "C", "EL", "LE", "AIRE")
+
+homophones = {
+        "AISLE": ["ISLE"], "AIR": ["HEIR"], "AFFECT": ["EFFECT"], "BARE": ["BEAR"], "BLEW": ["BLUE"],
+        "BRAKE": ["BREAK"], "CELL": ["SELL"], "CENT": ["SCENT", "SENT"], "COURSE": ["COARSE"],
+        "DIE": ["DYE"], "FAIR": ["FARE"], "FORTH": ["FOURTH"], "HEAR": ["HERE"],
+        "HOLE": ["WHOLE"], "HOUR": ["OUR"], "KNIGHT": ["NIGHT"], "LEAD": ["LED"], "MAIL": ["MALE"],
+        "MEAT": ["MEET"], "PAIR": ["PARE", "PEAR"], "PEACE": ["PIECE"], "PLAIN": ["PLANE"], "PRINCIPAL": ["PRINCIPLE"],
+        "RIGHT": ["WRITE", "RITE"], "SEA": ["SEE"], "SIGHT": ["SITE"], "STEAL": ["STEEL"], "STAIR": ["STARE"],
+        "TAIL": ["TALE"], "THEIR": ["THERE", "THEY’RE"], "TOE": ["TOW"], "WAIST": ["WASTE"], "WEAK": ["WEEK"],
+        "WEATHER": ["WHETHER"], "WHICH": ["WITCH"], "YOUR": ["YOU’RE"], "REED": ["READ"], "SEAS": ["SEES", "CEASE"],
+        "SOLE": ["SOUL"], "SOME": ["SUM"], "STALK": ["STOCK"], "THREW": ["THROUGH"], "WEAR": ["WHERE"],
+        "WEIGH": ["WAY"], "WHOSE": ["WHO’S"], "VAIN": ["VEIN", "VANE"], "ALLEN": ["ALAN"], "MARY": ["MERRY"],
+        "LUKE": ["LOOK"], "CHRIS": ["KRIS"], "MOOR": ["MORE"]
+    }
+
+import re
+
+
+def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exceptions,
+                  disallowed_ends_with, ends_with_exceptions, homophones):
+    issues = []
+    word = word.upper()  # Normalize to uppercase for consistent checks
+
+    # Check for special characters
+    if re.search(r'[^A-Z\s]', word):
+        issues.append("Contains special characters")
+
+    # Check for silent letters
+    silent_patterns = ['KN', 'GN', 'PS', 'PH']
+    for pattern in silent_patterns:
+        if (pattern == 'PS' and word.startswith(pattern)) or (pattern in word and pattern != 'PS'):
+            issues.append(f"Contains silent '{pattern}'")
+
+    # Check for problematic vowel/consonant combinations, ignoring exceptions
+    problematic_combinations = ['IE', 'EI', 'GH', 'AI', 'CK', 'AE', 'OI', 'OU', 'QU', 'EY', 'OE', 'EO', 'UA', 'KN']
+    for combo in problematic_combinations:
+        if combo in word and not any(exc in word for exc in problematic_combination_exceptions):
+            issues.append(f"Contains problematic combination '{combo}'")
+
+    # Check for repeated letters, ignoring exceptions
+    if any(word.count(char * 2) > 0 for char in set(word)):
+        if not any(exc in word for exc in repeated_letter_exceptions):
+            issues.append("Contains repeated letters")
+
+    # Check if word ends in disallowed endings unless in exceptions
+    if word.endswith(disallowed_ends_with) and not any(word.endswith(exc) for exc in ends_with_exceptions):
+        issues.append("Ends in disallowed suffix")
+
+    # Check word length
+    if len(word) > 12:
+        issues.append("Exceeds length limit")
+
+    # Check for homophones with specific feedback
+    matching_homophones = [f"{key}-{value}" for key, values in homophones.items() for value in values if
+                           key in word or value in word]
+    if matching_homophones:
+        issues.append(f"Contains homophone: {', '.join(matching_homophones)}")
+
+    # Return approval or disapproval based on issues
+    feedback = ', '.join(issues)
+    return ("Disapproved", feedback[:252] + "...") if issues else ("Approved", "Meets all criteria")
+
+
+# Helper function to consolidate overlapping or nearby ranges within a specified distance (e.g., 50 units)
+def consolidate_ranges(ranges):
+    # Return empty list if no ranges are provided
+    if not ranges:
+        return []
+
+    # Sort ranges by their starting values for sequential processing
+    sorted_ranges = sorted(ranges, key=lambda r: int(r.split(" - ")[0]))
+    consolidated = []  # List to store the consolidated range results
+    current_start, current_end = map(int, sorted_ranges[0].split(" - "))  # Initialize with the first range
+
+    # Iterate over the remaining ranges to merge overlapping or nearby ranges
+    for r in sorted_ranges[1:]:
+        start, end = map(int, r.split(" - "))  # Parse the start and end of each range
+        if start <= current_end + 50:
+            # Extend the current range if the start of this range is within 50 units of the current end
+            current_end = max(current_end, end)
+        else:
+            # If the ranges are too far apart, finalize the current range and start a new one
+            consolidated.append(f"{current_start} - {current_end}")
+            current_start, current_end = start, end
+
+    # Append the last consolidated range
+    consolidated.append(f"{current_start} - {current_end}")
+    return consolidated
+
+
+print("Helper functions and disallowed name lists defined.")
+
+# Helper function to identify if a given name starts with any prefix in the name_starts list
+def matches_namestart(name, name_starts):
+    for start in name_starts:
+        if name.startswith(start):  # Check if the name starts with the current prefix
+            return start  # Return the matching prefix if found
+    return None  # Return None if no match is found
+
+print("Name start matching function defined.")
+
+
+# Function to check if a proposed name starts with any banned prefix from a provided list
+def check_banned_name_start(proposed_name, banned_name_starts):
+    proposed_name = proposed_name.upper()  # Ensure consistency in case for matching
+    for banned_start in banned_name_starts:
+        if proposed_name.startswith(banned_start.upper()):  # Match against uppercase prefix
+            # print(f"Detected banned prefix '{banned_start}' in '{proposed_name}'")  # Diagnostic print
+            return f"Proposed name '{proposed_name}' is disallowed because it starts with '{banned_start}'."
+    # print("No banned prefix found")  # Diagnostic print if no match is found
+    return None  # No banned prefix found
+
+
+# Function to check if a proposed name is disallowed based on various lists
+def is_disallowed_name(proposed_name):
+    # Normalize to uppercase for case-insensitive matching
+    proposed_name = proposed_name.upper()
+
+    # Initialize an empty result message
+    result = None
+
+    # Check if the name is in any of the exact disallowed lists
+    if proposed_name in business_names:
+        result = f"{proposed_name} is disallowed because it is a business name."
+    elif proposed_name in city_names:
+        result = f"{proposed_name} is disallowed because it is a city name."
+    elif proposed_name in county_names:
+        result = f"{proposed_name} is disallowed because it is a county name."
+    elif proposed_name in arterial_names:
+        result = f"{proposed_name} is disallowed because it is a major arterial road."
+
+    # Check if any cardinal direction appears as a substring
+    for cardinal in cardinal_names:
+        if cardinal.upper() in proposed_name:
+            result = f"{proposed_name} is disallowed because it contains the cardinal direction '{cardinal}'."
+            break  # Stop checking if one match is found
+
+    # Check if any USPS name appears as a substring
+    for usps in usps_names:
+        if usps.upper() in proposed_name:
+            result = f"{proposed_name} is disallowed because it contains the USPS name '{usps}'."
+            break  # Stop checking if one match is found
+
+    # Print and return result if a disallowance is found
+    if result:
+        print(result)  # Display in Notebook output
+        return result
+
+    # Return None if no disallowed condition is met
+    return None
+
+
+
+### Modifications made for streamlit
+def detect_conflicts(proposed_name, relevant_name_start, api_url):
+    conflicts = []  # List to store records that conflict with the proposed name
+    disallowed_prefixes = set()
+    disallowed_ranges = set()
+    disallowed_types = set()
+    disallowed_cities = set()
+
+    # Query API for relevant data
+    query_params = {
+        "where": f"LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%'",
+        "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
+        "f": "json",
+    }
+    response = requests.get(api_url, params=query_params)
+    if response.status_code != 200:
+        raise Exception(f"Error fetching data: {response.status_code}")
+
+    # Parse API response
+    features = response.json().get("features", [])
+    for feature in features:
+        row = feature["attributes"]
+        existing_range = f"{row['MIN_FromAddr_L']} - {row['MAX_ToAddr_L']}"
+        existing_prefix = row.get("LSt_PreDir", "")
+        existing_name = row["LSt_Name"]
+        existing_type = row.get("LSt_Typ", "")
+        existing_city = row.get("MSAGComm_L", "")
+
+        # Check for an exact name match
+        if existing_name == proposed_name:
+            conflicts.append([existing_range, existing_prefix, existing_name, existing_type, existing_city])
+            disallowed_types.add(existing_type)
+            disallowed_cities.add(existing_city)
+            disallowed_ranges.add(existing_range)
+            disallowed_prefixes.add(existing_prefix)
+
+        # Check for a match based on relevant name start
+        elif relevant_name_start and existing_name.startswith(relevant_name_start):
+            conflicts.append([existing_range, existing_prefix, existing_name, existing_type, existing_city])
+            disallowed_types.add(existing_type)
+            disallowed_cities.add(existing_city)
+
+    return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities

@@ -17,7 +17,7 @@ from IPython.display import display, Markdown
 import ipywidgets as widgets
 
 # Initialize GIS object (assuming user is signed into ArcGIS Pro or Online in 'home' mode)
-gis = GIS("home")
+gis = GIS()
 
 # Define the URL for the feature layer containing street data
 layer_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0"

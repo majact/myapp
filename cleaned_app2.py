@@ -12,7 +12,7 @@ params = {
     "f": "json"  # Format the response as JSON
 }
 
-response = requests.get(layer_url, params=params)  # Send GET request
+response = requests.get(api_url, params=params)  # Send GET request
 if response.status_code == 200:
     # Convert response to Pandas DataFrame
     features = response.json().get("features", [])

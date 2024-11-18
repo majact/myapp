@@ -287,3 +287,100 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
             disallowed_cities.add(existing_city)
 
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
+
+
+# Function to format conflict results for a proposed street name
+def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
+                            disallowed_cities):
+    # If there are no conflicts, return a simple acceptance message
+    if not conflicts:
+        return f"Street name '{proposed_name}' is acceptable with no conflicts."
+
+    # Initialize result message with naming conditions if conflicts exist
+    result = f"## Naming Conditions\nStreet name '{proposed_name}' is allowed as long as it is not assigned with the following elements:\n"
+
+    # List out disallowed elements by category
+    if disallowed_prefixes:
+        result += f"- Prefix: {', '.join(disallowed_prefixes)}\n"
+    if disallowed_ranges:
+        result += f"- Range: {', '.join(disallowed_ranges)}\n"
+    if disallowed_types:
+        result += f"- Type: {', '.join(disallowed_types)}\n"
+    if disallowed_cities:
+        result += f"- Mailing City: {', '.join(disallowed_cities)}\n"
+
+    # Add existing assignments in a markdown-style table format for easy readability
+    result += f"\n## Existing Assignment\nThe name '{proposed_name}' is already assigned as follows:\n\n"
+    result += "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
+    result += "|---------------------|---------|-------------|--------|------------------|\n"
+
+    # Populate table rows with sorted conflict data for a structured output
+    for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
+        result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[
+            4]:<16} |\n"
+
+    return result
+
+
+print("Updated conflict result formatting function defined.")
+
+
+
+import streamlit as st
+
+def check_proposed_name(proposed_name):
+    issues = []
+    disapproved = False
+
+    # Step 1: Check if the proposed name is disallowed
+    disallowed_reason = is_disallowed_name(proposed_name)
+    if disallowed_reason:
+        issues.append(disallowed_reason)
+        disapproved = True
+
+    # Step 2: Check if the name starts with a banned prefix
+    banned_start_reason = check_banned_name_start(proposed_name, banned_name_starts)
+    if banned_start_reason:
+        issues.append(banned_start_reason)
+        disapproved = True
+
+    # Step 3: Check spelling and pronunciation using evaluate_word
+    status, feedback = evaluate_word(proposed_name, repeated_letter_exceptions, problematic_combination_exceptions,
+                                     disallowed_ends_with, ends_with_exceptions, homophones)
+    if status == "Disapproved":
+        issues.append(feedback)
+        disapproved = True
+
+    # Step 4: Only detect conflicts if name has passed all previous checks
+    if not disapproved:
+        relevant_name_start = matches_namestart(proposed_name, name_starts)
+        conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities = detect_conflicts(
+            proposed_name, relevant_name_start, existing_data
+        )
+
+        # Format the conflict results if there are conflicts
+        if conflicts:
+            conflict_summary = format_conflict_results(proposed_name, conflicts, disallowed_prefixes,
+                                                       disallowed_ranges, disallowed_types, disallowed_cities)
+            issues.append(conflict_summary)
+
+    # Step 5: Display results
+    if issues:
+        full_feedback = "\n\n".join(issues)
+        st.error(full_feedback)
+        return full_feedback
+    else:
+        success_message = f"Proposed name '{proposed_name}' meets all criteria."
+        st.success(success_message)
+        return success_message
+
+
+# Streamlit UI Integration
+st.title("Proposed Name Checker")
+
+proposed_name = st.text_input("Enter the proposed street name:")
+if st.button("Check Name"):
+    if proposed_name.strip():
+        check_proposed_name(proposed_name.upper().strip())
+    else:
+        st.warning("Please enter a valid street name.")

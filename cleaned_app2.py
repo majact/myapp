@@ -435,10 +435,6 @@ def check_proposed_name(proposed_name):
 
 
 
-    # Confirm whether the addition was successful
-    if add_response['addResults'][0]['success']:
-
-
 import ipywidgets as widgets
 import datetime
 

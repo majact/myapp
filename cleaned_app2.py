@@ -243,27 +243,40 @@ def is_disallowed_name(proposed_name):
     return None
 
 
+import requests
+from urllib.parse import urlencode
 
-### Modifications made for streamlit
 def detect_conflicts(proposed_name, relevant_name_start, api_url):
-    conflicts = []  # List to store records that conflict with the proposed name
-    disallowed_prefixes = set()
-    disallowed_ranges = set()
-    disallowed_types = set()
-    disallowed_cities = set()
+    # Sanitize inputs
+    proposed_name = str(proposed_name).strip()
+    relevant_name_start = str(relevant_name_start).strip()
 
-    # Query API for relevant data
+    # Construct query parameters
     query_params = {
         "where": f"LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%'",
         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
         "f": "json",
     }
-    response = requests.get(api_url, params=query_params)
-    if response.status_code != 200:
-        raise Exception(f"Error fetching data: {response.status_code}")
 
-    # Parse API response
+    # Debugging: Print URL and params
+    print(f"URL: {api_url}")
+    print(f"Query Params Before Encoding: {query_params}")
+
+    # Ensure proper encoding
+    try:
+        response = requests.get(api_url, params=query_params)
+        response.raise_for_status()  # Raise an error for HTTP issues
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error during API request: {e}")
+
+    # Parse and process the response
     features = response.json().get("features", [])
+    conflicts = []
+    disallowed_prefixes = set()
+    disallowed_ranges = set()
+    disallowed_types = set()
+    disallowed_cities = set()
+
     for feature in features:
         row = feature["attributes"]
         existing_range = f"{row['MIN_FromAddr_L']} - {row['MAX_ToAddr_L']}"
@@ -272,21 +285,19 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
         existing_type = row.get("LSt_Typ", "")
         existing_city = row.get("MSAGComm_L", "")
 
-        # Check for an exact name match
         if existing_name == proposed_name:
             conflicts.append([existing_range, existing_prefix, existing_name, existing_type, existing_city])
             disallowed_types.add(existing_type)
             disallowed_cities.add(existing_city)
             disallowed_ranges.add(existing_range)
             disallowed_prefixes.add(existing_prefix)
-
-        # Check for a match based on relevant name start
         elif relevant_name_start and existing_name.startswith(relevant_name_start):
             conflicts.append([existing_range, existing_prefix, existing_name, existing_type, existing_city])
             disallowed_types.add(existing_type)
             disallowed_cities.add(existing_city)
 
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
+
 
 
 # Function to format conflict results for a proposed street name

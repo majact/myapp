@@ -1,86 +1,79 @@
+
 import streamlit as st
-import requests
-import pandas as pd
-import re
+import datetime
 
-# Streamlit App Title
-st.title("Street Name Validation Tool")
+# Define utility functions from the original notebook
 
-# Feature layer URL
-layer_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
-
-# Query parameters
-params = {
-    "where": "1=1",  # Select all records
-    "outFields": "*",  # Retrieve all fields
-    "f": "json"       # Return data in JSON format
-}
-
-# Fetch data function
-@st.cache_data
-def fetch_street_data():
-    """Fetch street data from the feature layer."""
-    try:
-        response = requests.get(layer_url, params=params)
-        response.raise_for_status()
-        data = response.json()
-        features = data.get("features", [])
-        attributes = [feature["attributes"] for feature in features]
-        return pd.DataFrame(attributes)
-    except Exception as e:
-        st.error(f"Error fetching data: {e}")
-        return pd.DataFrame()
-
-# Helper functions for validation
-banned_name_starts = ["HILL", "BEAVER", "CEDAR", "MAPLE", "OAK", "MAIN", "MT", "PACIFIC", "WALNUT"]
-arterial_names = [
-    "ALLEN", "APIARY", "BALD PEAK", "BARBUR", "BARNES", "BASELINE", "BEAVERCREEK", "BEEF BEND",
-    "BELMONT", "BERTHA", "BONITA", "BURNSIDE", "CANYON", "CAPITOL", "CORNELIUS", "CORNELL", "FARMINGTON",
-    "HAWTHORNE", "INTERSTATE", "JACKSON", "MACADAM", "MAIN", "MURRAY", "PACIFIC", "POWELL", "STARK"
-]
-
-def is_disallowed_name(proposed_name):
-    """Check if the proposed name is disallowed."""
-    proposed_name = proposed_name.upper()
-    if proposed_name in arterial_names:
-        return f"'{proposed_name}' is disallowed because it is a major arterial road."
-    for start in banned_name_starts:
-        if proposed_name.startswith(start):
-            return f"'{proposed_name}' is disallowed because it starts with '{start}'."
+# Function to detect if a name is disallowed
+def is_disallowed_name(proposed_name, disallowed_lists):
+    for category, names in disallowed_lists.items():
+        if proposed_name in names:
+            return f"{proposed_name} is disallowed because it matches a {category}."
     return None
 
-def detect_conflicts(proposed_name, data):
-    """Detect conflicts with existing data."""
-    conflicts = data[data['LSt_Name'].str.upper() == proposed_name.upper()]
-    return conflicts
+# Function to evaluate if a name starts with banned prefixes
+def check_banned_name_start(proposed_name, banned_prefixes):
+    for prefix in banned_prefixes:
+        if proposed_name.startswith(prefix):
+            return f"{proposed_name} is disallowed because it starts with the banned prefix '{prefix}'."
+    return None
 
-# Fetch the data
-st.write("Fetching street data...")
-street_data = fetch_street_data()
+# Function to evaluate word spelling and structure
+def evaluate_word(proposed_name, problematic_combinations, ends_with_exceptions):
+    for combo in problematic_combinations:
+        if combo in proposed_name:
+            return "Disapproved", f"Contains problematic combination '{combo}'"
+    if proposed_name.endswith(tuple(ends_with_exceptions)):
+        return "Approved", "Meets criteria"
+    return "Approved", "No issues detected"
 
-if not street_data.empty:
-    st.success(f"Fetched {len(street_data)} records successfully!")
+# Detect conflicts in GIS data (mock implementation; real implementation would query GIS data)
+def detect_conflicts(proposed_name, existing_data):
+    conflicts = [row for row in existing_data if proposed_name in row]
+    if conflicts:
+        return conflicts, {"conflicting_prefixes"}, {"conflicting_ranges"}
+    return [], {}, {}
 
-    # Input form for proposed street name
-    proposed_name = st.text_input("Enter the proposed street name:", "").strip()
+# Streamlit main app logic
+st.title("Proposed Street Name Validation")
 
-    if st.button("Validate"):
-        if not proposed_name:
-            st.warning("Please enter a street name.")
+# Inputs for configuration
+disallowed_lists = {
+    "business names": ["ACME", "GLOBAL"],
+    "city names": ["SPRINGFIELD", "GOTHAM"]
+}
+banned_prefixes = ["OLD", "NEW"]
+problematic_combinations = ["GH", "PH"]
+ends_with_exceptions = ["VILLE", "TON"]
+existing_data = [{"street_name": "MAIN", "prefix": "N"}]
+
+proposed_name = st.text_input("Enter the proposed street name:", "")
+
+if st.button("Submit"):
+    if proposed_name.strip():
+        proposed_name = proposed_name.upper().strip()
+        
+        # Check if disallowed
+        disallowed_reason = is_disallowed_name(proposed_name, disallowed_lists)
+        if disallowed_reason:
+            st.error(disallowed_reason)
         else:
-            # Step 1: Check disallowed names
-            disallowed_reason = is_disallowed_name(proposed_name)
-            if disallowed_reason:
-                st.error(disallowed_reason)
+            # Check for banned prefix
+            banned_reason = check_banned_name_start(proposed_name, banned_prefixes)
+            if banned_reason:
+                st.error(banned_reason)
             else:
-                st.success(f"The proposed name '{proposed_name}' meets basic naming criteria.")
-                
-                # Step 2: Check for conflicts
-                conflicts = detect_conflicts(proposed_name, street_data)
-                if not conflicts.empty:
-                    st.warning(f"The name '{proposed_name}' conflicts with existing assignments:")
-                    st.dataframe(conflicts)
+                # Evaluate spelling and pronunciation
+                status, feedback = evaluate_word(proposed_name, problematic_combinations, ends_with_exceptions)
+                if status == "Disapproved":
+                    st.error(feedback)
                 else:
-                    st.success(f"The name '{proposed_name}' is unique and has no conflicts.")
-else:
-    st.warning("No data available.")
+                    # Detect conflicts
+                    conflicts, prefixes, ranges = detect_conflicts(proposed_name, existing_data)
+                    if conflicts:
+                        st.error("Conflicts detected:")
+                        st.json(conflicts)
+                    else:
+                        st.success(f"Proposed name '{proposed_name}' meets all criteria.")
+    else:
+        st.error("Please enter a valid street name.")

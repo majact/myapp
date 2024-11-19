@@ -313,9 +313,56 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
 
 
+def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
+                            disallowed_cities):
+    """
+    Generates formatted conflict results as a string.
+
+    Args:
+        proposed_name (str): The proposed street name.
+        conflicts (list of lists): List of conflicts (e.g., address ranges, prefixes, etc.).
+        disallowed_prefixes (set): Disallowed prefixes.
+        disallowed_ranges (list of tuples): Disallowed address ranges.
+        disallowed_types (set): Disallowed street types.
+        disallowed_cities (set): Disallowed mailing cities.
+
+    Returns:
+        str: Formatted feedback string.
+    """
+    # Start with naming conditions
+    result = f"## Naming Conditions\nStreet name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:\n"
+
+    # Add disallowed prefixes
+    if disallowed_prefixes:
+        result += f"**Prefixes:** {', '.join(sorted(disallowed_prefixes))}\n"
+
+    # Add disallowed ranges
+    if disallowed_ranges:
+        consolidated_ranges = consolidate_ranges(disallowed_ranges)
+        result += f"**Ranges:** {', '.join(f'{start} - {end}' for start, end in consolidated_ranges)}\n"
+
+    # Add disallowed types
+    if disallowed_types:
+        result += f"**Types:** {', '.join(sorted(disallowed_types))}\n"
+
+    # Add disallowed cities
+    if disallowed_cities:
+        result += f"**Mailing Cities:** {', '.join(sorted(disallowed_cities))}\n"
+
+    # Add conflict table for existing assignments
+    result += f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:\n"
+    table_header = "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
+    table_header += "|---------------------|---------|-------------|--------|------------------|\n"
+    table_rows = ""
+    for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
+        table_rows += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[4]:<16} |\n"
+    result += table_header + table_rows
+
+    return result
 
 
-# # Function to format conflict results for a proposed street name
+
+# Function to format conflict results for a proposed street name
 # def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
 #                             disallowed_cities):
 #     # If there are no conflicts, return a simple acceptance message
@@ -352,49 +399,49 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
 
 # print("Updated conflict result formatting function defined.")
 
-import streamlit as st
+# import streamlit as st
 
-def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
-                            disallowed_cities):
-    """
-    Formats conflict results for display in Streamlit.
-    """
-    # No conflicts, display acceptance message
-    if not conflicts:
-        st.success(f"Street name **'{proposed_name}'** is acceptable with no conflicts.")
-        return
+# def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
+#                             disallowed_cities):
+#     """
+#     Formats conflict results for display in Streamlit.
+#     """
+#     # No conflicts, display acceptance message
+#     if not conflicts:
+#         st.success(f"Street name **'{proposed_name}'** is acceptable with no conflicts.")
+#         return
 
-    # Naming conditions section
-    st.markdown(f"## Naming Conditions\nStreet name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:")
+#     # Naming conditions section
+#     st.markdown(f"## Naming Conditions\nStreet name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:")
 
-    # Disallowed prefixes
-    if disallowed_prefixes:
-        formatted_prefixes = ", ".join(sorted(disallowed_prefixes))
-        st.markdown(f"**Disallowed Prefixes:** {formatted_prefixes}")
+#     # Disallowed prefixes
+#     if disallowed_prefixes:
+#         formatted_prefixes = ", ".join(sorted(disallowed_prefixes))
+#         st.markdown(f"**Disallowed Prefixes:** {formatted_prefixes}")
 
-    # Disallowed ranges
-    if disallowed_ranges:
-        consolidated_ranges = consolidate_ranges(disallowed_ranges)
-        formatted_ranges = ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
-        st.markdown(f"**Disallowed Ranges:** {formatted_ranges}")
+#     # Disallowed ranges
+#     if disallowed_ranges:
+#         consolidated_ranges = consolidate_ranges(disallowed_ranges)
+#         formatted_ranges = ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
+#         st.markdown(f"**Disallowed Ranges:** {formatted_ranges}")
 
-    # Disallowed types
-    if disallowed_types:
-        formatted_types = ", ".join(sorted(disallowed_types))
-        st.markdown(f"**Disallowed Types:** {formatted_types}")
+#     # Disallowed types
+#     if disallowed_types:
+#         formatted_types = ", ".join(sorted(disallowed_types))
+#         st.markdown(f"**Disallowed Types:** {formatted_types}")
 
-    # Disallowed cities
-    if disallowed_cities:
-        formatted_cities = ", ".join(sorted(disallowed_cities))
-        st.markdown(f"**Disallowed Mailing/Zip Cities:** {formatted_cities}")
+#     # Disallowed cities
+#     if disallowed_cities:
+#         formatted_cities = ", ".join(sorted(disallowed_cities))
+#         st.markdown(f"**Disallowed Mailing/Zip Cities:** {formatted_cities}")
 
-    # Existing assignment section
-    st.markdown(f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:")
+#     # Existing assignment section
+#     st.markdown(f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:")
 
-    # Convert conflicts into a DataFrame for Streamlit table
-    if conflicts:
-        df = pd.DataFrame(conflicts, columns=["Address Range", "Prefix", "Name", "Type", "Mailing City"])
-        st.table(df)
+#     # Convert conflicts into a DataFrame for Streamlit table
+#     if conflicts:
+#         df = pd.DataFrame(conflicts, columns=["Address Range", "Prefix", "Name", "Type", "Mailing City"])
+#         st.table(df)
 
 
 

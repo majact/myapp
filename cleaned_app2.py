@@ -156,17 +156,25 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
 
 def consolidate_ranges(ranges):
     """
-    Consolidates a list of numerical ranges by merging overlapping or adjacent ranges.
+    Consolidates a list or set of numerical ranges by merging overlapping or adjacent ranges.
 
     Args:
-        ranges (list of tuples): A list of ranges represented as (start, end).
+        ranges (list of tuples or set of str): A list of ranges as (start, end) tuples 
+                                               or a set of "start - end" strings.
 
     Returns:
         list of tuples: A sorted list of consolidated ranges.
     """
-    # Validate that ranges is a list of tuples
+    # Convert set of "start - end" strings to a list of tuples
+    if isinstance(ranges, set):
+        try:
+            ranges = [tuple(map(int, r.split(" - "))) for r in ranges]
+        except ValueError as e:
+            raise ValueError(f"Error parsing ranges: {ranges}. {e}")
+
+    # Validate input format
     if not isinstance(ranges, list):
-        raise ValueError(f"Expected a list of tuples, but got {type(ranges).__name__}: {ranges}")
+        raise ValueError(f"Expected a list of tuples or set of strings, but got {type(ranges).__name__}: {ranges}")
     if not all(isinstance(r, tuple) and len(r) == 2 for r in ranges):
         raise ValueError(f"All elements in ranges must be tuples of (start, end), but got: {ranges}")
 
@@ -186,6 +194,7 @@ def consolidate_ranges(ranges):
                 consolidated.append((start, end))
 
     return consolidated
+
 
 
 

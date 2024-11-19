@@ -155,30 +155,36 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
     return ("Disapproved", feedback[:252] + "...") if issues else ("Approved", "Meets all criteria")
 
 
-# Helper function to consolidate overlapping or nearby ranges within a specified distance (e.g., 50 units)
 def consolidate_ranges(ranges):
-    # Return empty list if no ranges are provided
-    if not ranges:
-        return []
-
-    # Sort ranges by their starting values for sequential processing
-    sorted_ranges = sorted(ranges, key=lambda r: int(r.split(" - ")[0]))
-    consolidated = []  # List to store the consolidated range results
-    current_start, current_end = map(int, sorted_ranges[0].split(" - "))  # Initialize with the first range
-
-    # Iterate over the remaining ranges to merge overlapping or nearby ranges
-    for r in sorted_ranges[1:]:
-        start, end = map(int, r.split(" - "))  # Parse the start and end of each range
-        if start <= current_end + 50:
-            # Extend the current range if the start of this range is within 50 units of the current end
-            current_end = max(current_end, end)
+    """
+    Consolidates a list of numerical ranges by merging overlapping or adjacent ranges.
+    
+    Args:
+        ranges (list of tuples): A list of ranges represented as (start, end).
+    
+    Returns:
+        list of tuples: A list of consolidated ranges.
+    """
+    # Sort ranges by their start values
+    sorted_ranges = sorted(ranges, key=lambda x: x[0])
+    
+    # Initialize the consolidated list
+    consolidated = []
+    
+    for current_range in sorted_ranges:
+        if not consolidated:
+            # Add the first range if the consolidated list is empty
+            consolidated.append(current_range)
         else:
-            # If the ranges are too far apart, finalize the current range and start a new one
-            consolidated.append(f"{current_start} - {current_end}")
-            current_start, current_end = start, end
-
-    # Append the last consolidated range
-    consolidated.append(f"{current_start} - {current_end}")
+            # Compare the current range with the last consolidated range
+            last_range = consolidated[-1]
+            if current_range[0] <= last_range[1] + 1:
+                # Merge ranges if they overlap or are adjacent
+                consolidated[-1] = (last_range[0], max(last_range[1], current_range[1]))
+            else:
+                # Otherwise, add the current range as a new range
+                consolidated.append(current_range)
+    
     return consolidated
 
 

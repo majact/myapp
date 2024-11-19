@@ -2,6 +2,7 @@
 import requests  # HTTP requests library
 import pandas as pd  # Data manipulation library
 from urllib.parse import urlencode
+import streamlit as st
 
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
@@ -513,7 +514,7 @@ def display_feedback(feedback, status="info", platform="streamlit"):
         platform (str): The platform to display on ("streamlit" or "jupyter").
     """
     if platform == "streamlit":
-        import streamlit as st
+
         if status == "success":
             st.success(feedback)
         elif status == "error":

@@ -398,7 +398,17 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
 
 
 
-def check_proposed_name(proposed_name):
+def check_proposed_name(proposed_name, platform="streamlit"):
+    """
+    Checks the proposed name for conflicts and issues, and displays feedback.
+
+    Args:
+        proposed_name (str): The proposed street name.
+        platform (str): The platform to display feedback on ("streamlit" or "jupyter").
+    
+    Returns:
+        str: Full feedback message.
+    """
     issues = []
     disapproved = False
 
@@ -414,35 +424,36 @@ def check_proposed_name(proposed_name):
         issues.append(banned_start_reason)
         disapproved = True
 
-    # Step 3: Check spelling and pronunciation using evaluate_word
+    # Step 3: Check spelling and pronunciation
     status, feedback = evaluate_word(proposed_name, repeated_letter_exceptions, problematic_combination_exceptions,
                                      disallowed_ends_with, ends_with_exceptions, homophones)
     if status == "Disapproved":
         issues.append(feedback)
         disapproved = True
 
-    # Step 4: Only detect conflicts if name has passed all previous checks
+    # Step 4: Detect conflicts if no disapproval
     if not disapproved:
         relevant_name_start = matches_namestart(proposed_name, name_starts)
         conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities = detect_conflicts(
             proposed_name, relevant_name_start, api_url
         )
-
-        # Format the conflict results if there are conflicts
         if conflicts:
             conflict_summary = format_conflict_results(proposed_name, conflicts, disallowed_prefixes,
                                                        disallowed_ranges, disallowed_types, disallowed_cities)
             issues.append(conflict_summary)
 
+    
+    
     # Step 5: Display results
     if issues:
         full_feedback = "\n\n".join(issues)
-        st.error(full_feedback)
+        display_feedback(full_feedback, status="error", platform=platform)  # Use display_feedback for errors
         return full_feedback
     else:
         success_message = f"Proposed name '{proposed_name}' meets all criteria."
-        st.success(success_message)
+        display_feedback(success_message, status="success", platform=platform)  # Use display_feedback for success
         return success_message
+
 
 
 def display_feedback(feedback, status="info", platform="streamlit"):

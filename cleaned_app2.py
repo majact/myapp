@@ -315,46 +315,105 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
 
 
 
-# Function to format conflict results for a proposed street name
+# # Function to format conflict results for a proposed street name
+# def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
+#                             disallowed_cities):
+#     # If there are no conflicts, return a simple acceptance message
+#     if not conflicts:
+#         return f"Street name '{proposed_name}' is acceptable with no conflicts."
+
+#     # Initialize result message with naming conditions if conflicts exist
+#     result = f"## Naming Conditions\nStreet name '{proposed_name}' is allowed as long as it is not assigned with the following elements:\n"
+
+#     # List out disallowed elements by category
+#     if disallowed_prefixes:
+#         formatted_prefixes = ", ".join(sorted(disallowed_prefixes))  # Sort for consistency
+#         result += f"Prefixes: {formatted_prefixes}\n"
+#     if disallowed_ranges:
+#         consolidated_ranges = consolidate_ranges(disallowed_ranges)
+#         result += ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
+#     if disallowed_types:
+#         result += f"- Type: {', '.join(disallowed_types)}\n"
+#     if disallowed_cities:
+#         result += f"- Mailing City: {', '.join(disallowed_cities)}\n"
+
+#     # Add existing assignments in a markdown-style table format for easy readability
+#     result += f"\n## Existing Assignment\nThe name '{proposed_name}' is already assigned as follows:\n\n"
+#     result += "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
+#     result += "|---------------------|---------|-------------|--------|------------------|\n"
+
+#     # Populate table rows with sorted conflict data for a structured output
+#     for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
+#         result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[
+#             4]:<16} |\n"
+
+#     return result
+
+
+# print("Updated conflict result formatting function defined.")
+
+import streamlit as st
+
 def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
                             disallowed_cities):
-    # If there are no conflicts, return a simple acceptance message
+    """
+    Formats conflict results for display in Streamlit.
+
+    Args:
+        proposed_name (str): Proposed street name.
+        conflicts (list of lists): Conflict details including ranges, prefixes, etc.
+        disallowed_prefixes (set): Disallowed prefixes.
+        disallowed_ranges (list of tuples): Disallowed ranges.
+        disallowed_types (set): Disallowed street types.
+        disallowed_cities (set): Disallowed mailing cities.
+
+    Returns:
+        None: Outputs directly to Streamlit using st.markdown.
+    """
+    # No conflicts, display acceptance message
     if not conflicts:
-        return f"Street name '{proposed_name}' is acceptable with no conflicts."
+        st.success(f"Street name **'{proposed_name}'** is acceptable with no conflicts.")
+        return
 
-    # Initialize result message with naming conditions if conflicts exist
-    result = f"## Naming Conditions\nStreet name '{proposed_name}' is allowed as long as it is not assigned with the following elements:\n"
+    # Naming conditions section
+    st.markdown(f"## Naming Conditions\nStreet name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:")
 
-    # List out disallowed elements by category
+    # Disallowed prefixes
     if disallowed_prefixes:
-        formatted_prefixes = ", ".join(sorted(disallowed_prefixes))  # Sort for consistency
-        result += f"Prefixes: {formatted_prefixes}\n"
+        formatted_prefixes = ", ".join(sorted(disallowed_prefixes))
+        st.markdown(f"**Prefixes:** {formatted_prefixes}")
+
+    # Disallowed ranges
     if disallowed_ranges:
         consolidated_ranges = consolidate_ranges(disallowed_ranges)
-        # formatted_types = ", ".join(sorted(disallowed_types))  # Sort for consistency
-        # result += f"Types: {formatted_types}\n"
-        
-        result += ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
+        formatted_ranges = ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
+        st.markdown(f"**Ranges:** {formatted_ranges}")
+
+    # Disallowed types
     if disallowed_types:
-        result += f"- Type: {', '.join(disallowed_types)}\n"
+        formatted_types = ", ".join(sorted(disallowed_types))
+        st.markdown(f"**Types:** {formatted_types}")
+
+    # Disallowed cities
     if disallowed_cities:
-        result += f"- Mailing City: {', '.join(disallowed_cities)}\n"
+        formatted_cities = ", ".join(sorted(disallowed_cities))
+        st.markdown(f"**Mailing Cities:** {formatted_cities}")
 
-    # Add existing assignments in a markdown-style table format for easy readability
-    result += f"\n## Existing Assignment\nThe name '{proposed_name}' is already assigned as follows:\n\n"
-    result += "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
-    result += "|---------------------|---------|-------------|--------|------------------|\n"
+    # Existing assignment section
+    st.markdown(f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:")
 
-    # Populate table rows with sorted conflict data for a structured output
-    for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
-        result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[
-            4]:<16} |\n"
+    # Conflict table
+    if conflicts:
+        table_header = """
+        | Address Range       | Prefix  | Name        | Type   | Mailing City     |
+        |---------------------|---------|-------------|--------|------------------|
+        """
+        table_rows = ""
+        for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
+            table_rows += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[4]:<16} |\n"
 
-    return result
-
-
-print("Updated conflict result formatting function defined.")
-
+        # Render the markdown table
+        st.markdown(table_header + table_rows)
 
 
 import streamlit as st

@@ -164,32 +164,26 @@ def consolidate_ranges(ranges):
     Returns:
         list of tuples: A sorted list of consolidated ranges.
     """
-    # Validate and normalize the input to ensure all ranges are tuples of integers
-    cleaned_ranges = []
-    for start, end in ranges:
-        if not (isinstance(start, int) and isinstance(end, int)):
-            raise ValueError(f"Invalid range values: ({start}, {end}) - Both must be integers.")
-        cleaned_ranges.append((min(start, end), max(start, end)))  # Ensure start <= end
+    # Validate that ranges is a list of tuples
+    if not isinstance(ranges, list):
+        raise ValueError(f"Expected a list of tuples, but got {type(ranges).__name__}: {ranges}")
+    if not all(isinstance(r, tuple) and len(r) == 2 for r in ranges):
+        raise ValueError(f"All elements in ranges must be tuples of (start, end), but got: {ranges}")
 
-    # Sort ranges by starting values
-    cleaned_ranges.sort(key=lambda x: x[0])
+    # Sort ranges by their start values
+    sorted_ranges = sorted(ranges, key=lambda x: x[0])
 
-    # Initialize the consolidated list
+    # Consolidate overlapping or adjacent ranges
     consolidated = []
-
-    for current_range in cleaned_ranges:
+    for start, end in sorted_ranges:
         if not consolidated:
-            # Add the first range if the consolidated list is empty
-            consolidated.append(current_range)
+            consolidated.append((start, end))
         else:
-            # Compare the current range with the last consolidated range
-            last_range = consolidated[-1]
-            if current_range[0] <= last_range[1] + 1:
-                # Merge ranges if they overlap or are adjacent
-                consolidated[-1] = (last_range[0], max(last_range[1], current_range[1]))
+            last_start, last_end = consolidated[-1]
+            if start <= last_end + 1:  # Overlapping or adjacent ranges
+                consolidated[-1] = (last_start, max(last_end, end))
             else:
-                # Otherwise, add the current range as a new range
-                consolidated.append(current_range)
+                consolidated.append((start, end))
 
     return consolidated
 

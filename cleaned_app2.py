@@ -358,17 +358,6 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
                             disallowed_cities):
     """
     Formats conflict results for display in Streamlit.
-
-    Args:
-        proposed_name (str): Proposed street name.
-        conflicts (list of lists): Conflict details including ranges, prefixes, etc.
-        disallowed_prefixes (set): Disallowed prefixes.
-        disallowed_ranges (list of tuples): Disallowed ranges.
-        disallowed_types (set): Disallowed street types.
-        disallowed_cities (set): Disallowed mailing cities.
-
-    Returns:
-        None: Outputs directly to Streamlit using st.markdown.
     """
     # No conflicts, display acceptance message
     if not conflicts:
@@ -408,7 +397,6 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
         st.table(df)
 
 
-import streamlit as st
 
 def check_proposed_name(proposed_name):
     issues = []

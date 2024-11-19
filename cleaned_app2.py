@@ -402,19 +402,10 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
     # Existing assignment section
     st.markdown(f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:")
 
-    # Conflict Table
+    # Convert conflicts into a DataFrame for Streamlit table
     if conflicts:
-        # Validate and format conflicts
-        table_header = """
-        | Address Range       | Prefix  | Name        | Type   | Mailing City     |
-        |---------------------|---------|-------------|--------|------------------|
-        """
-        table_rows = ""
-        for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
-            table_rows += f"| {str(conflict[0]):<20} | {str(conflict[1]):<7} | {str(conflict[2]):<11} | {str(conflict[3]):<6} | {str(conflict[4]):<16} |\n"
-
-        # Display the table
-        st.text(table_header + table_rows)
+        df = pd.DataFrame(conflicts, columns=["Address Range", "Prefix", "Name", "Type", "Mailing City"])
+        st.table(df)
 
 
 import streamlit as st

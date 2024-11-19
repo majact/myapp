@@ -445,6 +445,36 @@ def check_proposed_name(proposed_name):
         return success_message
 
 
+def display_feedback(feedback, status="info", platform="streamlit"):
+    """
+    Displays feedback based on the platform.
+
+    Args:
+        feedback (str): The feedback message to display.
+        status (str): The feedback type ("info", "success", "error").
+        platform (str): The platform to display on ("streamlit" or "jupyter").
+    """
+    if platform == "streamlit":
+        import streamlit as st
+        if status == "success":
+            st.success(feedback)
+        elif status == "error":
+            st.error(feedback)
+        else:
+            st.markdown(feedback)
+    elif platform == "jupyter":
+        if status == "success":
+            print(f"✅ SUCCESS: {feedback}")
+        elif status == "error":
+            print(f"❌ ERROR: {feedback}")
+        else:
+            print(feedback)
+
+display_feedback("This is an informational message.", status="info", platform="streamlit")
+display_feedback("This is a success message.", status="success", platform="streamlit")
+display_feedback("This is an error message.", status="error", platform="streamlit")
+
+
 # Streamlit UI Integration
 st.title("Proposed Name Checker")
 

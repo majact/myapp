@@ -328,7 +328,9 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
     if disallowed_prefixes:
         result += f"- Prefix: {', '.join(disallowed_prefixes)}\n"
     if disallowed_ranges:
-        result += f"- Range: {', '.join(disallowed_ranges)}\n"
+        ### Pass disallowed_ranges into consolidate_ranges to merge them
+        consolidated_ranges = consolidate_ranges(disallowed_ranges)
+        result += f"- Range: {', '.join(consolidated_ranges)}\n"
     if disallowed_types:
         result += f"- Type: {', '.join(disallowed_types)}\n"
     if disallowed_cities:

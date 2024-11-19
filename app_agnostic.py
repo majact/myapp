@@ -400,7 +400,7 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
 
 # print("Updated conflict result formatting function defined.")
 
-# import streamlit as st
+
 
 # def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
 #                             disallowed_cities):
@@ -443,7 +443,6 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
 #     if conflicts:
 #         df = pd.DataFrame(conflicts, columns=["Address Range", "Prefix", "Name", "Type", "Mailing City"])
 #         st.table(df)
-
 
 
 def check_proposed_name(proposed_name, platform="streamlit"):
@@ -490,24 +489,22 @@ def check_proposed_name(proposed_name, platform="streamlit"):
                                                        disallowed_ranges, disallowed_types, disallowed_cities)
             issues.append(conflict_summary)
 
-    
-    
     # Step 5: Display results
     if issues:
         full_feedback = "\n\n".join(issues)
-        display_feedback(full_feedback, status="error", platform=platform)  # Use display_feedback for errors
+        display_feedback(full_feedback, status="error", platform=platform)
         return full_feedback
     else:
         success_message = f"Proposed name '{proposed_name}' meets all criteria."
-        display_feedback(success_message, status="success", platform=platform)  # Use display_feedback for success
+        display_feedback(success_message, status="success", platform=platform)
         return success_message
+
 
 
 
 def display_feedback(feedback, status="info", platform="streamlit"):
     """
     Displays feedback based on the platform.
-
     Args:
         feedback (str): The feedback message to display.
         status (str): The feedback type ("info", "success", "error").
@@ -529,9 +526,9 @@ def display_feedback(feedback, status="info", platform="streamlit"):
         else:
             print(feedback)
 
-display_feedback("This is an informational message.", status="info", platform="streamlit")
-display_feedback("This is a success message.", status="success", platform="streamlit")
-display_feedback("This is an error message.", status="error", platform="streamlit")
+# display_feedback("This is an informational message.", status="info", platform="streamlit")
+# display_feedback("This is a success message.", status="success", platform="streamlit")
+# display_feedback("This is an error message.", status="error", platform="streamlit")
 
 
 # Streamlit UI Integration

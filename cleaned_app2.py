@@ -154,24 +154,30 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
     feedback = ', '.join(issues)
     return ("Disapproved", feedback[:252] + "...") if issues else ("Approved", "Meets all criteria")
 
-
 def consolidate_ranges(ranges):
     """
     Consolidates a list of numerical ranges by merging overlapping or adjacent ranges.
-    
+
     Args:
         ranges (list of tuples): A list of ranges represented as (start, end).
-    
+
     Returns:
-        list of tuples: A list of consolidated ranges.
+        list of tuples: A sorted list of consolidated ranges.
     """
-    # Sort ranges by their start values
-    sorted_ranges = sorted(ranges, key=lambda x: x[0])
-    
+    # Validate and normalize the input to ensure all ranges are tuples of integers
+    cleaned_ranges = []
+    for start, end in ranges:
+        if not (isinstance(start, int) and isinstance(end, int)):
+            raise ValueError(f"Invalid range values: ({start}, {end}) - Both must be integers.")
+        cleaned_ranges.append((min(start, end), max(start, end)))  # Ensure start <= end
+
+    # Sort ranges by starting values
+    cleaned_ranges.sort(key=lambda x: x[0])
+
     # Initialize the consolidated list
     consolidated = []
-    
-    for current_range in sorted_ranges:
+
+    for current_range in cleaned_ranges:
         if not consolidated:
             # Add the first range if the consolidated list is empty
             consolidated.append(current_range)
@@ -184,8 +190,9 @@ def consolidate_ranges(ranges):
             else:
                 # Otherwise, add the current range as a new range
                 consolidated.append(current_range)
-    
+
     return consolidated
+
 
 
 print("Helper functions and disallowed name lists defined.")

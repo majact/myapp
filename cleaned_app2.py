@@ -330,9 +330,11 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
         formatted_prefixes = ", ".join(sorted(disallowed_prefixes))  # Sort for consistency
         result += f"Prefixes: {formatted_prefixes}\n"
     if disallowed_ranges:
-        # result += f"- Range: {', '.join(disallowed_ranges)}\n"
         consolidated_ranges = consolidate_ranges(disallowed_ranges)
-        result += ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
+        formatted_types = ", ".join(sorted(disallowed_types))  # Sort for consistency
+        result += f"Types: {formatted_types}\n"
+        
+                                # result += ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
     if disallowed_types:
         result += f"- Type: {', '.join(disallowed_types)}\n"
     if disallowed_cities:

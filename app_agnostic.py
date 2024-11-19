@@ -317,7 +317,7 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
 def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
                             disallowed_cities):
     """
-    Generates formatted conflict results as a string.
+    Generates formatted conflict results as a Markdown-compatible string.
 
     Args:
         proposed_name (str): The proposed street name.
@@ -328,38 +328,38 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
         disallowed_cities (set): Disallowed mailing cities.
 
     Returns:
-        str: Formatted feedback string.
+        str: Formatted Markdown-compatible feedback string.
     """
     # Start with naming conditions
-    result = f"## Naming Conditions\nStreet name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:\n"
+    result = f"## Naming Conditions\n\n"
+    result += f"Street name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:\n\n"
 
     # Add disallowed prefixes
     if disallowed_prefixes:
-        result += f"**Prefixes:** {', '.join(sorted(disallowed_prefixes))}\n"
+        result += f"- **Prefixes:** {', '.join(sorted(disallowed_prefixes))}  \n"
 
     # Add disallowed ranges
     if disallowed_ranges:
         consolidated_ranges = consolidate_ranges(disallowed_ranges)
-        result += f"**Ranges:** {', '.join(f'{start} - {end}' for start, end in consolidated_ranges)}\n"
+        result += f"- **Ranges:** {', '.join(f'{start} - {end}' for start, end in consolidated_ranges)}  \n"
 
     # Add disallowed types
     if disallowed_types:
-        result += f"**Types:** {', '.join(sorted(disallowed_types))}\n"
+        result += f"- **Types:** {', '.join(sorted(disallowed_types))}  \n"
 
     # Add disallowed cities
     if disallowed_cities:
-        result += f"**Mailing Cities:** {', '.join(sorted(disallowed_cities))}\n"
+        result += f"- **Mailing Cities:** {', '.join(sorted(disallowed_cities))}  \n"
 
     # Add conflict table for existing assignments
-    result += f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:\n"
-    table_header = "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
-    table_header += "|---------------------|---------|-------------|--------|------------------|\n"
-    table_rows = ""
+    result += f"\n## Existing Assignment\n\n"
+    result += "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
+    result += "|---------------------|---------|-------------|--------|------------------|\n"
     for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
-        table_rows += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[4]:<16} |\n"
-    result += table_header + table_rows
+        result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[4]:<16} |\n"
 
     return result
+
 
 
 

@@ -156,25 +156,17 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
 
 def consolidate_ranges(ranges):
     """
-    Consolidates a list or set of numerical ranges by merging overlapping or adjacent ranges.
+    Consolidates a list of numerical ranges by merging overlapping or adjacent ranges.
 
     Args:
-        ranges (list of tuples or set of str): A list of ranges as (start, end) tuples 
-                                               or a set of "start - end" strings.
+        ranges (list of tuples): A list of ranges represented as (start, end).
 
     Returns:
         list of tuples: A sorted list of consolidated ranges.
     """
-    # Convert set of "start - end" strings to a list of tuples
-    if isinstance(ranges, set):
-        try:
-            ranges = [tuple(map(int, r.split(" - "))) for r in ranges]
-        except ValueError as e:
-            raise ValueError(f"Error parsing ranges: {ranges}. {e}")
-
     # Validate input format
     if not isinstance(ranges, list):
-        raise ValueError(f"Expected a list of tuples or set of strings, but got {type(ranges).__name__}: {ranges}")
+        raise ValueError(f"Expected a list of tuples, but got {type(ranges).__name__}: {ranges}")
     if not all(isinstance(r, tuple) and len(r) == 2 for r in ranges):
         raise ValueError(f"All elements in ranges must be tuples of (start, end), but got: {ranges}")
 
@@ -194,7 +186,6 @@ def consolidate_ranges(ranges):
                 consolidated.append((start, end))
 
     return consolidated
-
 
 
 
@@ -290,30 +281,37 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
     features = response.json().get("features", [])
     conflicts = []
     disallowed_prefixes = set()
-    disallowed_ranges = set()
+    disallowed_ranges = []  # Change to a list of tuples
     disallowed_types = set()
     disallowed_cities = set()
 
     for feature in features:
         row = feature["attributes"]
-        existing_range = f"{row['MIN_FromAddr_L']} - {row['MAX_ToAddr_L']}"
+        # Extract start and end values for the range
+        try:
+            min_addr = int(row["MIN_FromAddr_L"])
+            max_addr = int(row["MAX_ToAddr_L"])
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid range data in row: {row}")
+
         existing_prefix = row.get("LSt_PreDir", "")
         existing_name = row["LSt_Name"]
         existing_type = row.get("LSt_Typ", "")
         existing_city = row.get("MSAGComm_L", "")
 
         if existing_name == proposed_name:
-            conflicts.append([existing_range, existing_prefix, existing_name, existing_type, existing_city])
+            conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
             disallowed_types.add(existing_type)
             disallowed_cities.add(existing_city)
-            disallowed_ranges.add(existing_range)
+            disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
             disallowed_prefixes.add(existing_prefix)
         elif relevant_name_start and existing_name.startswith(relevant_name_start):
-            conflicts.append([existing_range, existing_prefix, existing_name, existing_type, existing_city])
+            conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
             disallowed_types.add(existing_type)
             disallowed_cities.add(existing_city)
 
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
+
 
 
 

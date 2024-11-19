@@ -381,23 +381,23 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
     # Disallowed prefixes
     if disallowed_prefixes:
         formatted_prefixes = ", ".join(sorted(disallowed_prefixes))
-        st.markdown(f"**Prefixes:** {formatted_prefixes}")
+        st.markdown(f"**Disallowed Prefixes:** {formatted_prefixes}")
 
     # Disallowed ranges
     if disallowed_ranges:
         consolidated_ranges = consolidate_ranges(disallowed_ranges)
         formatted_ranges = ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
-        st.markdown(f"**Ranges:** {formatted_ranges}")
+        st.markdown(f"**Disallowed Ranges:** {formatted_ranges}")
 
     # Disallowed types
     if disallowed_types:
         formatted_types = ", ".join(sorted(disallowed_types))
-        st.markdown(f"**Types:** {formatted_types}")
+        st.markdown(f"**Disallowed Types:** {formatted_types}")
 
     # Disallowed cities
     if disallowed_cities:
         formatted_cities = ", ".join(sorted(disallowed_cities))
-        st.markdown(f"**Mailing Cities:** {formatted_cities}")
+        st.markdown(f"**Disallowed Mailing/Zip Cities:** {formatted_cities}")
 
     # Existing assignment section
     st.markdown(f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:")

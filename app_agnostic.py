@@ -157,7 +157,8 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
 
 def consolidate_ranges(ranges):
     """
-    Consolidates a list of numerical ranges by merging overlapping, adjacent, or close ranges within a 500-unit threshold.
+    Consolidates a list of numerical ranges by merging overlapping, adjacent, 
+    or close ranges within a 500-unit threshold.
 
     Args:
         ranges (list of tuples): A list of ranges represented as (start, end).
@@ -174,20 +175,20 @@ def consolidate_ranges(ranges):
     # Sort ranges by their start values
     sorted_ranges = sorted(ranges, key=lambda x: x[0])
 
-    # Consolidate overlapping, adjacent, or close ranges
+    # Consolidate ranges based on the 500-unit threshold
     consolidated = []
     for start, end in sorted_ranges:
         if not consolidated:
             consolidated.append((start, end))
         else:
             last_start, last_end = consolidated[-1]
-            if start <= last_end + 500:  # Overlapping, adjacent, or within 500
+            # Merge if ranges overlap, are adjacent, or within 500 units
+            if start <= last_end + 500:
                 consolidated[-1] = (last_start, max(last_end, end))
             else:
                 consolidated.append((start, end))
 
     return consolidated
-
 
 print("Helper functions and disallowed name lists defined.")
 

@@ -127,7 +127,8 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
             issues.append(f"Contains silent '{pattern}'")
 
     # Check for problematic vowel/consonant combinations, ignoring exceptions
-    problematic_combinations = ['IE', 'EI', 'GH', 'AI', 'CK', 'AE', 'OI', 'OU', 'QU', 'EY', 'OE', 'EO', 'UA', 'KN']
+    problematic_combinations = [] 
+    #['IE', 'EI', 'GH', 'AI', 'CK', 'AE', 'OI', 'OU', 'QU', 'EY', 'OE', 'EO', 'UA', 'KN']
     for combo in problematic_combinations:
         if combo in word and not any(exc in word for exc in problematic_combination_exceptions):
             issues.append(f"Contains problematic combination '{combo}'")

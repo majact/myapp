@@ -1,12 +1,15 @@
 import streamlit as st
 
-# Set Streamlit app title
-st.title("AGOL Web Map Display in Streamlit")
+# Streamlit app title
+st.title("Dynamic AGOL Web Map Test")
 
-# Define the URL for your AGOL Web Map or Web App
-web_map_url = "https://majcs.maps.arcgis.com/apps/mapviewer/index.html?webmap=fcc64d756cc24d2eb48f2337bf8ac6d8"
+# Input for the disallowed prefix
+prefix = st.text_input("Enter disallowed prefix (e.g., 'NW')", value="NW")
 
-# Embed the Web Map using an iframe
+# AGOL Web Map URL with dynamic 'where' clause for the prefix filter
+web_map_url = f"https://majcs.maps.arcgis.com/apps/mapviewer/index.html?webmap=fcc64d756cc24d2eb48f2337bf8ac6d8&where=Prefix='{prefix}'"
+
+# Display the dynamic Web Map in an iframe
 st.components.v1.html(
     f'<iframe src="{web_map_url}" width="100%" height="600" frameborder="0"></iframe>',
     height=600,

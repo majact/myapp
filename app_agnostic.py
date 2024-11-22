@@ -246,7 +246,7 @@ def is_disallowed_name(proposed_name):
     # Check if any USPS name appears as a substring
     for usps in usps_names:
         if usps.upper() in proposed_name:
-            result = f"{proposed_name} is disallowed because it contains the USPS name '{usps}'."
+            result = f"{proposed_name} is disallowed because it contains the reserved USPS street type '{usps}'."
             break  # Stop checking if one match is found
 
     # Print and return result if a disallowance is found

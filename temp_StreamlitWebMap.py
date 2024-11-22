@@ -1,26 +1,16 @@
 import streamlit as st
-import requests
 
-# Input for Prefix value
-prefix = st.text_input("Enter Prefix to query (e.g., 'SE')", value="SE")
+# Streamlit app title
+st.title("Dynamic AGOL Map Viewer with Filtering")
 
-# Construct the query URL
-query_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
-params = {
-    "where": f"Prefix='{prefix}'",
-    "outFields": "*",
-    "f": "json"
-}
+# User input for prefix
+prefix = st.text_input("Enter prefix to filter (e.g., 'SE')", value="SE")
 
-# Query the feature layer
-response = requests.get(query_url, params=params)
+# Construct the dynamic Web App URL with 'where' clause
+web_app_url = f"https://majcs.maps.arcgis.com/apps/mapviewer/index.html?webmap=fcc64d756cc24d2eb48f2337bf8ac6d8&where=Prefix='{prefix}'"
 
-# Display results
-if response.status_code == 200:
-    data = response.json()
-    if data.get("features"):
-        st.write(f"Features matching Prefix='{prefix}':", data["features"])
-    else:
-        st.write(f"No features found for Prefix='{prefix}'.")
-else:
-    st.error(f"Error querying feature layer: {response.status_code}")
+# Embed the filtered Web Map in Streamlit
+st.components.v1.html(
+    f'<iframe src="{web_app_url}" width="100%" height="600" frameborder="0"></iframe>',
+    height=600,
+)

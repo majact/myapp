@@ -37,7 +37,7 @@ county_names = ['MALHEUR']
 
 # Common arterial street names that should be excluded
 arterial_names = [
-    "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARN", "BARNES", "BASELINE",
+    "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARNES", "BASELINE",
     "BEAVERCREEK", "BEEF BEND", "BELMONT", "BERTHA", "BOECKMAN", "BONITA", "BOONE", "BORLAND",
     "BROOKWOOD", "BROADWAY", "BURNSIDE", "CANYON", "CAPITOL", "CHILDS", "CORNELIUS", "CORNELL",
     "COUNTRY CLUB", "DAVIS", "DENVER", "DIVISION", "ELLIGSEN", "EVERGREEN", "FARMINGTON", "FLAVEL",
@@ -62,7 +62,7 @@ usps_names = ["AVENUE", "PLACE", "WAY", "TERRACE", "DRIVE", "STREET"]  # USPS st
 # Common name starts that might be excluded due to duplication or ambiguity
 name_starts = [
     "GREEN", "BLUE", "WHITE", "BROWN", "BLACK", "RED", "YELLOW", "PURPLE", "GREY", "GRAY", "ORANGE",
-    "ALBERT", "ALEX", "ALTA", "ARCH", "ASH", "BASE", "BAY", "BEAVER", "BEEF", "BELL", "BERNARD",
+    "ALBERT", "ALEX", "ALTA", "ARCH", "ASH", "BARN", "BASE", "BAY", "BEAVER", "BEEF", "BELL", "BERNARD",
     "BIG", "BOONE", "BOUND", "BOX", "BRAD", "BRAN", "BROWN", "BRIGHT", "BROOK", "BRUN", "BUCK",
     "BUTTER", "CANYON", "CHAT", "CHERRY", "CHURCH", "CLARK", "CLAY", "CLEAR", "CLIFF", "CLOUD",
     "CLOVER", "COLD", "COOL", "COPPER", "CORN", "CROSS", "DALE", "DAWN", "DEEP", "DEER", "DOUBLE",

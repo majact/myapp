@@ -308,6 +308,7 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
             disallowed_prefixes.add(existing_prefix)
         elif relevant_name_start and existing_name.startswith(relevant_name_start):
             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
+            disallowed_prefixes.add(existing_prefix)
             disallowed_types.add(existing_type)
             disallowed_cities.add(existing_city)
 

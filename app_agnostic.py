@@ -346,20 +346,20 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
 
     # Add disallowed prefixes
     if disallowed_prefixes:
-        result += f"- **Prefixes:** {', '.join(sorted(disallowed_prefixes))}  \n"
+        result += f"- **Disallowed Prefixes:** {', '.join(sorted(disallowed_prefixes))}  \n"
 
     # Add disallowed ranges
     if disallowed_ranges:
         consolidated_ranges = consolidate_ranges(disallowed_ranges)
-        result += f"- **Ranges:** {', '.join(f'{start} - {end}' for start, end in consolidated_ranges)}  \n"
+        result += f"- **Disallowed Ranges:** {', '.join(f'{start} - {end}' for start, end in consolidated_ranges)}  \n"
 
     # Add disallowed types
     if disallowed_types:
-        result += f"- **Types:** {', '.join(sorted(disallowed_types))}  \n"
+        result += f"- **Disallowed Types:** {', '.join(sorted(disallowed_types))}  \n"
 
     # Add disallowed cities
     if disallowed_cities:
-        result += f"- **Mailing Cities:** {', '.join(sorted(disallowed_cities))}  \n"
+        result += f"- **Disallowed Mailing Cities:** {', '.join(sorted(disallowed_cities))}  \n"
 
     # Add conflict table for existing assignments
     result += f"\n## Existing Assignment\n\n"

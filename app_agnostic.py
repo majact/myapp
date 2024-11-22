@@ -4,6 +4,9 @@ import pandas as pd  # Data manipulation library
 from urllib.parse import urlencode
 import streamlit as st
 import re
+from helpers.map_helpers import query_features_by_prefix
+
+
 
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
@@ -450,8 +453,12 @@ def check_proposed_name(proposed_name, platform="streamlit"):
         return success_message
 
 
-
-
+# Assuming you already have disallowed_prefixes from your existing logic
+if disallowed_prefixes:  # If there are any disallowed prefixes
+    # Render the map with the disallowed prefixes
+    render_disallowed_prefix_map(disallowed_prefixes, api_url)
+else:
+    st.warning("No disallowed prefixes found.")
 
 
 

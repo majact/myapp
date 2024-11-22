@@ -1,44 +1,45 @@
-from shapely.geometry import shape
-import folium
-from streamlit_folium import st_folium
+def render_disallowed_prefix_map(disallowed_prefixes, api_url):
+    """
+    Renders a Folium map with polygons matching the disallowed prefixes.
 
-# Function to query AGOL feature layer for polygons matching disallowed prefixes
-def query_features_by_prefix(prefix):
-    params = {
-        "where": f"Prefix='{prefix}'",  # Query dynamically based on prefix
-        "outFields": "*",
-        "f": "geojson",  # Return GeoJSON format for folium
-        "returnGeometry": "true",
-    }
-    response = requests.get(api_url, params=params)  # Use the existing `api_url` variable
-    if response.status_code == 200:
-        return response.json()  # Return GeoJSON data
-    else:
-        st.error(f"Failed to query features for prefix '{prefix}': {response.status_code}")
-        return None
-
-# Function to dynamically render a map with disallowed prefix polygons
-def render_disallowed_prefix_map(disallowed_prefixes):
+    Args:
+        disallowed_prefixes (list or set): A collection of disallowed prefixes.
+        api_url (str): The AGOL feature layer URL.
+    """
+    # Prepare a combined GeoJSON to hold all matching polygons
     combined_geojson = {"type": "FeatureCollection", "features": []}
-    for prefix in disallowed_prefixes:
-        geojson_data = query_features_by_prefix(prefix)
-        if geojson_data and "features" in geojson_data:
-            combined_geojson["features"].extend(geojson_data["features"])
 
+    # Query for each disallowed prefix
+    for prefix in disallowed_prefixes:
+        params = {
+            "where": f"Prefix='{prefix}'",  # Filter by the current prefix
+            "outFields": "*",
+            "f": "geojson",
+            "returnGeometry": "true",
+        }
+        response = requests.get(api_url, params=params)
+        if response.status_code == 200:
+            geojson_data = response.json()
+            if "features" in geojson_data:
+                combined_geojson["features"].extend(geojson_data["features"])
+        else:
+            st.error(f"Failed to query prefix '{prefix}': {response.status_code}")
+
+    # Check if any polygons were found
     if combined_geojson["features"]:
-        # Use the centroid of the first feature for map centering
+        # Center map on the first polygon's centroid
         first_geometry = combined_geojson["features"][0]["geometry"]
         shapely_geometry = shape(first_geometry)
         centroid = shapely_geometry.centroid
         map_center = [centroid.y, centroid.x]
 
-        # Create a folium map
+        # Create a Folium map centered on the centroid
         m = folium.Map(location=map_center, zoom_start=12)
 
-        # Add GeoJSON layer to map
+        # Add the GeoJSON layer to the map
         folium.GeoJson(
             combined_geojson,
-            name="Disallowed Features",
+            name="Disallowed Prefixes",
             style_function=lambda x: {
                 "fillColor": "red",
                 "color": "red",
@@ -47,7 +48,7 @@ def render_disallowed_prefix_map(disallowed_prefixes):
             },
         ).add_to(m)
 
-        # Display the map
+        # Display the map in Streamlit
         st_folium(m, width=700, height=500)
     else:
-        st.warning("No disallowed prefixes found on the map.")
+        st.warning("No polygons found for the disallowed prefixes.")

@@ -259,7 +259,8 @@ def is_disallowed_name(proposed_name):
 
 
 
-
+# called by check_proposed_name - checks conflicts with existing names
+# result provides the input parameters for format_conflict_results
 def detect_conflicts(proposed_name, relevant_name_start, api_url):
     # Sanitize inputs
     proposed_name = str(proposed_name).strip()
@@ -315,12 +316,13 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
             disallowed_prefixes.add(existing_prefix)
             disallowed_types.add(existing_type)
+            disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
             disallowed_cities.add(existing_city)
 
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
 
 
-# called by check_proposed_name
+# called by check_proposed_name, final step
 # calls consolidate_ranges
 def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
                             disallowed_cities):
@@ -366,6 +368,36 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
     for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
         result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[4]:<16} |\n"
     return result
+
+
+# called by check_proposed_name
+def display_feedback(feedback, status="info", platform="streamlit"):
+    """
+    Displays feedback based on the platform.
+    Args:
+        feedback (str): The feedback message to display.
+        status (str): The feedback type ("info", "success", "error").
+        platform (str): The platform to display on ("streamlit" or "jupyter").
+    """
+    if platform == "streamlit":
+
+        if status == "success":
+            st.success(feedback)
+        elif status == "error":
+            st.error(feedback)
+        else:
+            st.markdown(feedback)
+    elif platform == "jupyter":
+        if status == "success":
+            print(f"✅ SUCCESS: {feedback}")
+        elif status == "error":
+            print(f"❌ ERROR: {feedback}")
+        else:
+            print(feedback)
+
+# display_feedback("This is an informational message.", status="info", platform="streamlit")
+# display_feedback("This is a success message.", status="success", platform="streamlit")
+# display_feedback("This is an error message.", status="error", platform="streamlit")
 
 
 
@@ -419,34 +451,7 @@ def check_proposed_name(proposed_name, platform="streamlit"):
 
 
 
-# called by check_proposed_name
-def display_feedback(feedback, status="info", platform="streamlit"):
-    """
-    Displays feedback based on the platform.
-    Args:
-        feedback (str): The feedback message to display.
-        status (str): The feedback type ("info", "success", "error").
-        platform (str): The platform to display on ("streamlit" or "jupyter").
-    """
-    if platform == "streamlit":
 
-        if status == "success":
-            st.success(feedback)
-        elif status == "error":
-            st.error(feedback)
-        else:
-            st.markdown(feedback)
-    elif platform == "jupyter":
-        if status == "success":
-            print(f"✅ SUCCESS: {feedback}")
-        elif status == "error":
-            print(f"❌ ERROR: {feedback}")
-        else:
-            print(feedback)
-
-# display_feedback("This is an informational message.", status="info", platform="streamlit")
-# display_feedback("This is a success message.", status="success", platform="streamlit")
-# display_feedback("This is an error message.", status="error", platform="streamlit")
 
 
 

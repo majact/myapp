@@ -86,7 +86,7 @@ repeated_letter_exceptions = {"AGREE", "WELL", "BUTTER", "AGREEMENT", "TREE", "W
                               "CROSS", "MOOSE", "MELLOW", "MAMMOTH", "POOL", "BERRY", "KITTY", "JOLLY", "HUGG",
                               "HOOVER", "HAGGER", "GULL", "FREE", "DUFF", "BILL", "DEEP", "LESS", "CHOPP", "CLAPP",
                               "CLIFF", "PASS", "COOL", "COPPER", "DELL", "COSTELLO", "BROOK", "DANNER", "NESS",
-                              "GOOD", "STALL", "SUCCESS", "VANILLA", "YARNELL", "ZIPPER", "HILL"}
+                              "GOOD", "STALL", "SUCCESS", "VANILLA", "YARNELL", "ZIPPER", "HILL", "PIONEER"}
 problematic_combination_exceptions = {"FIELD", "BOUND", "DUCK", "BUCK"}
 usps_street_type_exceptions = {"SPARK"}
 ends_with_exceptions = {"VALE", "DALE", "SAFARI", "ABLE"}

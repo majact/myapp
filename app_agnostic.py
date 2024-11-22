@@ -37,7 +37,7 @@ county_names = ['MALHEUR']
 
 # Common arterial street names that should be excluded
 arterial_names = [
-    "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARNES", "BASELINE",
+    "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARN", "BARNES", "BASELINE",
     "BEAVERCREEK", "BEEF BEND", "BELMONT", "BERTHA", "BOECKMAN", "BONITA", "BOONE", "BORLAND",
     "BROOKWOOD", "BROADWAY", "BURNSIDE", "CANYON", "CAPITOL", "CHILDS", "CORNELIUS", "CORNELL",
     "COUNTRY CLUB", "DAVIS", "DENVER", "DIVISION", "ELLIGSEN", "EVERGREEN", "FARMINGTON", "FLAVEL",

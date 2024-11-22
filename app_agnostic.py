@@ -3,6 +3,7 @@ import requests  # HTTP requests library
 import pandas as pd  # Data manipulation library
 from urllib.parse import urlencode
 import streamlit as st
+import re
 
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
@@ -108,9 +109,9 @@ homophones = {
         "LUKE": ["LOOK"], "CHRIS": ["KRIS"], "MOOR": ["MORE"]
     }
 
-import re
 
 
+# called by check_proposed_name
 def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exceptions,
                   disallowed_ends_with, ends_with_exceptions, homophones):
     issues = []
@@ -156,14 +157,14 @@ def evaluate_word(word, repeated_letter_exceptions, problematic_combination_exce
     feedback = ', '.join(issues)
     return ("Disapproved", feedback[:252] + "...") if issues else ("Approved", "Meets all criteria")
 
+
+
+# called by check_proposed_name
 def consolidate_ranges(ranges):
     """
-    Consolidates a list of numerical ranges by merging overlapping, adjacent, 
-    or close ranges within a 500-unit threshold.
-
+    Consolidates a list of numerical ranges by merging overlapping, adjacent, or close ranges within a 500-unit threshold.
     Args:
         ranges (list of tuples): A list of ranges represented as (start, end).
-
     Returns:
         list of tuples: A sorted list of consolidated ranges.
     """
@@ -191,8 +192,9 @@ def consolidate_ranges(ranges):
 
     return consolidated
 
-print("Helper functions and disallowed name lists defined.")
 
+
+# called by check_proposed_name
 # Helper function to identify if a given name starts with any prefix in the name_starts list
 def matches_namestart(name, name_starts):
     for start in name_starts:
@@ -203,6 +205,8 @@ def matches_namestart(name, name_starts):
 print("Name start matching function defined.")
 
 
+
+# called by check_proposed_name
 # Function to check if a proposed name starts with any banned prefix from a provided list
 def check_banned_name_start(proposed_name, banned_name_starts):
     proposed_name = proposed_name.upper()  # Ensure consistency in case for matching
@@ -214,6 +218,7 @@ def check_banned_name_start(proposed_name, banned_name_starts):
     return None  # No banned prefix found
 
 
+# called by check_proposed_name 
 # Function to check if a proposed name is disallowed based on various lists
 def is_disallowed_name(proposed_name):
     # Normalize to uppercase for case-insensitive matching
@@ -253,8 +258,7 @@ def is_disallowed_name(proposed_name):
     return None
 
 
-import requests
-from urllib.parse import urlencode
+
 
 def detect_conflicts(proposed_name, relevant_name_start, api_url):
     # Sanitize inputs
@@ -316,6 +320,8 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url):
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
 
 
+# called by check_proposed_name
+# calls consolidate_ranges
 def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
                             disallowed_cities):
     """
@@ -359,105 +365,15 @@ def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disal
     result += "|---------------------|---------|-------------|--------|------------------|\n"
     for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
         result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[4]:<16} |\n"
-
     return result
 
 
 
-
-# Function to format conflict results for a proposed street name
-# def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
-#                             disallowed_cities):
-#     # If there are no conflicts, return a simple acceptance message
-#     if not conflicts:
-#         return f"Street name '{proposed_name}' is acceptable with no conflicts."
-
-#     # Initialize result message with naming conditions if conflicts exist
-#     result = f"## Naming Conditions\nStreet name '{proposed_name}' is allowed as long as it is not assigned with the following elements:\n"
-
-#     # List out disallowed elements by category
-#     if disallowed_prefixes:
-#         formatted_prefixes = ", ".join(sorted(disallowed_prefixes))  # Sort for consistency
-#         result += f"Prefixes: {formatted_prefixes}\n"
-#     if disallowed_ranges:
-#         consolidated_ranges = consolidate_ranges(disallowed_ranges)
-#         result += ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
-#     if disallowed_types:
-#         result += f"- Type: {', '.join(disallowed_types)}\n"
-#     if disallowed_cities:
-#         result += f"- Mailing City: {', '.join(disallowed_cities)}\n"
-
-#     # Add existing assignments in a markdown-style table format for easy readability
-#     result += f"\n## Existing Assignment\nThe name '{proposed_name}' is already assigned as follows:\n\n"
-#     result += "| Address Range       | Prefix  | Name        | Type   | Mailing City     |\n"
-#     result += "|---------------------|---------|-------------|--------|------------------|\n"
-
-#     # Populate table rows with sorted conflict data for a structured output
-#     for conflict in sorted(conflicts, key=lambda x: (x[4], x[3], int(x[0].split(" - ")[0]))):
-#         result += f"| {conflict[0]:<20} | {conflict[1]:<7} | {conflict[2]:<11} | {conflict[3]:<6} | {conflict[
-#             4]:<16} |\n"
-
-#     return result
-
-
-# print("Updated conflict result formatting function defined.")
-
-
-
-# def format_conflict_results(proposed_name, conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types,
-#                             disallowed_cities):
-#     """
-#     Formats conflict results for display in Streamlit.
-#     """
-#     # No conflicts, display acceptance message
-#     if not conflicts:
-#         st.success(f"Street name **'{proposed_name}'** is acceptable with no conflicts.")
-#         return
-
-#     # Naming conditions section
-#     st.markdown(f"## Naming Conditions\nStreet name **'{proposed_name}'** is allowed as long as it is not assigned with the following elements:")
-
-#     # Disallowed prefixes
-#     if disallowed_prefixes:
-#         formatted_prefixes = ", ".join(sorted(disallowed_prefixes))
-#         st.markdown(f"**Disallowed Prefixes:** {formatted_prefixes}")
-
-#     # Disallowed ranges
-#     if disallowed_ranges:
-#         consolidated_ranges = consolidate_ranges(disallowed_ranges)
-#         formatted_ranges = ", ".join(f"{start} - {end}" for start, end in consolidated_ranges)
-#         st.markdown(f"**Disallowed Ranges:** {formatted_ranges}")
-
-#     # Disallowed types
-#     if disallowed_types:
-#         formatted_types = ", ".join(sorted(disallowed_types))
-#         st.markdown(f"**Disallowed Types:** {formatted_types}")
-
-#     # Disallowed cities
-#     if disallowed_cities:
-#         formatted_cities = ", ".join(sorted(disallowed_cities))
-#         st.markdown(f"**Disallowed Mailing/Zip Cities:** {formatted_cities}")
-
-#     # Existing assignment section
-#     st.markdown(f"## Existing Assignment\nThe name **'{proposed_name}'** is already assigned as follows:")
-
-#     # Convert conflicts into a DataFrame for Streamlit table
-#     if conflicts:
-#         df = pd.DataFrame(conflicts, columns=["Address Range", "Prefix", "Name", "Type", "Mailing City"])
-#         st.table(df)
-
-
+# called by user input
+# calls multiple functions to evaluate name, format the results, and display results according to the platform 
 def check_proposed_name(proposed_name, platform="streamlit"):
-    """
-    Checks the proposed name for conflicts and issues, and displays feedback.
-
-    Args:
-        proposed_name (str): The proposed street name.
-        platform (str): The platform to display feedback on ("streamlit" or "jupyter").
-    
-    Returns:
-        str: Full feedback message.
-    """
+    # called by display_feedback
+    # calls 6 functions
     issues = []
     disapproved = False
 
@@ -503,7 +419,7 @@ def check_proposed_name(proposed_name, platform="streamlit"):
 
 
 
-
+# called by check_proposed_name
 def display_feedback(feedback, status="info", platform="streamlit"):
     """
     Displays feedback based on the platform.
@@ -533,6 +449,8 @@ def display_feedback(feedback, status="info", platform="streamlit"):
 # display_feedback("This is an error message.", status="error", platform="streamlit")
 
 
+
+# User Input - calls check_proposed_name
 # Streamlit UI Integration
 st.title("Proposed Name Checker")
 

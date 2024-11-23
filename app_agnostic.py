@@ -466,9 +466,9 @@ if st.button("Check Name"):
         # Display the feedback
         st.write(feedback)
 
-        # Debug: Check disallowed prefixes
-        st.write(f"Disallowed Prefixes to Render: {disallowed_prefixes}")  # Add here
-        # Check and render the map for disallowed prefixes
+
+        disallowed_prefixes = list(disallowed_prefixes)
+        st.write(f"Disallowed Prefixes to Render: disallowed_prefixes")  # Add here
         
         if disallowed_prefixes:
             render_disallowed_prefix_map(list(disallowed_prefixes), api_url)  # Convert set to list

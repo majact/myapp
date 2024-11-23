@@ -3,6 +3,7 @@ import streamlit as st
 import folium
 import requests
 from shapely.geometry import shape
+
 prefixzones_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
 
 def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
@@ -22,7 +23,6 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         return
 
     where_clause = " OR ".join([f"Prefix='{prefix}'" for prefix in disallowed_prefixes])
-    # where_clause = " OR ".join([f"Prefix='{prefix.strip()}'" for prefix in disallowed_prefixes])
 
     params = {
         "where": where_clause,
@@ -51,30 +51,30 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         st.error(f"Query failed with status code {response.status_code}.")
         return
 
-if combined_geojson["features"]:
-    # Center map on the first polygon's centroid
-    first_geometry = combined_geojson["features"][0]["geometry"]
-    shapely_geometry = shape(first_geometry)
-    centroid = shapely_geometry.centroid
-    map_center = [centroid.y, centroid.x]
+    # Render the map only if features exist
+    if combined_geojson["features"]:
+        # Center map on the first polygon's centroid
+        first_geometry = combined_geojson["features"][0]["geometry"]
+        shapely_geometry = shape(first_geometry)
+        centroid = shapely_geometry.centroid
+        map_center = [centroid.y, centroid.x]
 
-    # Create a Folium map centered on the centroid
-    m = folium.Map(location=map_center, zoom_start=12)
+        # Create a Folium map centered on the centroid
+        m = folium.Map(location=map_center, zoom_start=12)
 
-    # Add the GeoJSON layer to the map
-    folium.GeoJson(
-        combined_geojson,
-        name="Disallowed Prefixes",
-        style_function=lambda x: {
-            "fillColor": "red",
-            "color": "red",
-            "weight": 2,
-            "fillOpacity": 0.5,
-        },
-    ).add_to(m)
+        # Add the GeoJSON layer to the map
+        folium.GeoJson(
+            combined_geojson,
+            name="Disallowed Prefixes",
+            style_function=lambda x: {
+                "fillColor": "red",
+                "color": "red",
+                "weight": 2,
+                "fillOpacity": 0.5,
+            },
+        ).add_to(m)
 
-    # Display the map in Streamlit
-    st_folium(m, width=700, height=500)
-else:
-    st.warning("No polygons found for the disallowed prefixes.")
-
+        # Display the map in Streamlit
+        st_folium(m, width=700, height=500)
+    else:
+        st.warning("No polygons found for the disallowed prefixes.")

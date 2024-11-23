@@ -20,6 +20,7 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         return
 
     where_clause = " OR ".join([f"Prefix='{prefix}'" for prefix in disallowed_prefixes])
+    where_clause = " OR ".join([f"Prefix='{prefix.strip()}'" for prefix in disallowed_prefixes])
 
     params = {
         "where": where_clause,

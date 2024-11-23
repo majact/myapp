@@ -4,7 +4,6 @@ import folium
 import requests
 from shapely.geometry import shape
 
-# Define the working POC render_disallowed_prefix_map function
 def render_disallowed_prefix_map(disallowed_prefixes, api_url):
     """
     Renders a Folium map with polygons matching the disallowed prefixes.
@@ -86,16 +85,8 @@ def render_disallowed_prefix_map(disallowed_prefixes, api_url):
     else:
         st.warning("No polygons found for the disallowed prefixes.")
 
-# Main App Logic
-st.title("Proposed Name Checker")
 
-proposed_name = st.text_input("Enter the proposed street name:")
-if st.button("Check Name"):
-    if proposed_name.strip():
-        # Example: Replace `get_disallowed_prefixes` with your logic to get the prefixes
-        disallowed_prefixes = ['NW', 'SE', 'SW']  # Replace with your actual function output
-        st.write(f"Disallowed Prefixes: {disallowed_prefixes}")  # Debugging
-        api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
-        render_disallowed_prefix_map(disallowed_prefixes, api_url)
-    else:
-        st.warning("Please enter a valid street name.")
+# Example Usage
+disallowed_prefixes = ['NW', 'SE', 'SW']
+api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
+render_disallowed_prefix_map(disallowed_prefixes, api_url)

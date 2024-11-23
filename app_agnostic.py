@@ -470,7 +470,7 @@ if st.button("Check Name"):
     if proposed_name.strip():
         # Call check_proposed_name to get disallowed prefixes
         full_feedback, disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())
-        
+        st.write(f"Type of disallowed_prefixes after check_proposed_name: {type(disallowed_prefixes)}")  # Debug
         st.session_state.last_prefixes = disallowed_prefixes  # Store prefixes in session state
         prefix_list = list(disallowed_prefixes)
         st.write(f"Converted Prefix List: {prefix_list}")  # Debugging statement

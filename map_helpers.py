@@ -4,89 +4,84 @@ import folium
 import requests
 from shapely.geometry import shape
 
-def render_disallowed_prefix_map(disallowed_prefixes, api_url):
+def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
     """
     Renders a Folium map with polygons matching the disallowed prefixes.
 
     Args:
         disallowed_prefixes (list): A collection of disallowed prefixes.
-        api_url (str): The AGOL feature layer URL.
+        prefixzones_url (str): The AGOL feature layer query URL.
     """
-    # Debug: Print the incoming prefixes
-    st.write(f"Prefixes to query: {disallowed_prefixes}")
+    st.write(f"Disallowed Prefixes: {disallowed_prefixes}")  # Debug: Ensure prefixes are correct
 
-    # Use session state to retain combined GeoJSON
-    if "combined_geojson" not in st.session_state:
-        st.session_state.combined_geojson = {"type": "FeatureCollection", "features": []}
+    # Handle empty prefix list
+    if not disallowed_prefixes:
+        st.warning("No disallowed prefixes provided. Nothing to render.")
+        return
 
-    # If prefixes have changed, re-query
-    if st.session_state.get("last_prefixes") != disallowed_prefixes:
-        st.session_state.last_prefixes = disallowed_prefixes
+    # Construct the WHERE clause
+    where_clause = " OR ".join([f"Prefix='{prefix}'" for prefix in disallowed_prefixes])
 
-        # Prepare a combined GeoJSON to hold all matching polygons
-        combined_geojson = {"type": "FeatureCollection", "features": []}
+    # API query parameters
+    params = {
+        "where": where_clause,
+        "outFields": "*",
+        "f": "geojson",
+        "returnGeometry": "true",
+    }
 
-        if not disallowed_prefixes:
-            st.warning("No disallowed prefixes provided.")
-            return
+    # Perform the API request
+    st.write("Querying the feature layer...")  # Debugging
+    response = requests.get(prefixzones_url, params=params)
 
-        # Construct the SQL `OR` clause
-        where_clause = " OR ".join([f"Prefix='{prefix}'" for prefix in disallowed_prefixes])
+    # Check for API request success
+    if response.status_code != 200:
+        st.error(f"API request failed with status code {response.status_code}.")
+        return
 
-        # Prepare query parameters
-        params = {
-            "where": where_clause,
-            "outFields": "*",
-            "f": "geojson",
-            "returnGeometry": "true",
-        }
+    # Parse the response
+    geojson_data = response.json()
+    st.write(f"API Response Received: {geojson_data}")  # Debug: Show raw response
 
-        # Perform the API request
-        response = requests.get(api_url, params=params)
+    # Extract features
+    features = geojson_data.get("features", [])
+    if not features:
+        st.warning("No matching polygons found for the disallowed prefixes.")
+        return
 
-        if response.status_code == 200:
-            geojson_data = response.json()
-            if "features" in geojson_data:
-                combined_geojson["features"].extend(geojson_data["features"])
-                st.session_state.combined_geojson = combined_geojson
-                st.write(f"Combined GeoJSON: {combined_geojson}")
-        else:
-            st.error(f"API request failed with status code {response.status_code}")
-            return
+    # Combine features into a single GeoJSON object
+    combined_geojson = {"type": "FeatureCollection", "features": features}
+    st.write(f"Combined GeoJSON Features: {combined_geojson['features']}")  # Debug
 
-    # Use session state GeoJSON for map rendering
-    combined_geojson = st.session_state.combined_geojson
+    # Determine the map center (centroid of the first polygon)
+    first_geometry = features[0]["geometry"]
+    shapely_geometry = shape(first_geometry)
+    centroid = shapely_geometry.centroid
+    map_center = [centroid.y, centroid.x]
 
-    # Check if any polygons were found
-    if combined_geojson["features"]:
-        # Center map on the first polygon's centroid
-        first_geometry = combined_geojson["features"][0]["geometry"]
-        shapely_geometry = shape(first_geometry)
-        centroid = shapely_geometry.centroid
-        map_center = [centroid.y, centroid.x]
+    # Create and render the map
+    m = folium.Map(location=map_center, zoom_start=12)
 
-        # Create a Folium map centered on the centroid
-        m = folium.Map(location=map_center, zoom_start=12)
+    folium.GeoJson(
+        combined_geojson,
+        name="Disallowed Prefixes",
+        style_function=lambda x: {
+            "fillColor": "red",
+            "color": "red",
+            "weight": 2,
+            "fillOpacity": 0.5,
+        },
+    ).add_to(m)
 
-        # Add the GeoJSON layer to the map
-        folium.GeoJson(
-            combined_geojson,
-            name="Disallowed Prefixes",
-            style_function=lambda x: {
-                "fillColor": "red",
-                "color": "red",
-                "weight": 2,
-                "fillOpacity": 0.5,
-            },
-        ).add_to(m)
-
-        # Display the map in Streamlit
-        st_folium(m, width=700, height=500)
-    else:
-        st.warning("No polygons found for the disallowed prefixes.")
+    st_folium(m, width=700, height=500)
 
 
-# Example Usage
-disallowed_prefixes = ['NW', 'SE', 'SW']
-api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
-render_disallowed_prefix_map(disallowed_prefixes, api_url)
+# Example test usage
+if __name__ == "__main__":
+    st.title("Disallowed Prefix Map")
+
+    # Example disallowed prefixes
+    disallowed_prefixes = ['NW', 'SE', 'SW']
+    prefixzones_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
+
+    render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url)

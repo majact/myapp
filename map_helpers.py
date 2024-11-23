@@ -8,28 +8,44 @@ def render_disallowed_prefix_map(disallowed_prefixes, api_url):
     Renders a Folium map with polygons matching the disallowed prefixes.
 
     Args:
-        disallowed_prefixes (list or set): A collection of disallowed prefixes.
+        disallowed_prefixes (list): A collection of disallowed prefixes.
         api_url (str): The AGOL feature layer URL.
     """
+    # Debug: Print the incoming prefixes
+    st.write(f"Prefixes to query: {disallowed_prefixes}")  # Debugging in Streamlit
+
     # Prepare a combined GeoJSON to hold all matching polygons
     combined_geojson = {"type": "FeatureCollection", "features": []}
 
-    # Query for each disallowed prefix
-    for prefix in disallowed_prefixes:
-        params = {
-            "where": f"Prefix='{prefix}'",  # Filter by the current prefix
-            "outFields": "*",
-            "f": "geojson",
-            "returnGeometry": "true",
-        }
-        response = requests.get(api_url, params=params)
-        if response.status_code == 200:
-            geojson_data = response.json()
-            if "features" in geojson_data:
-                combined_geojson["features"].extend(geojson_data["features"])
-                
-        else:
-            st.error(f"Failed to query prefix '{prefix}': {response.status_code}")
+    # Handle empty prefix list gracefully
+    if not disallowed_prefixes:
+        st.warning("No disallowed prefixes provided.")
+        return
+
+    # Construct the SQL `OR` clause
+    where_clause = " OR ".join([f"Prefix='{prefix}'" for prefix in disallowed_prefixes])
+
+    # Prepare query parameters
+    params = {
+        "where": where_clause,
+        "outFields": "*",
+        "f": "geojson",
+        "returnGeometry": "true",
+    }
+
+    # Perform the API request
+    response = requests.get(api_url, params=params)
+
+    # Debug: Log the query URL and response status
+    st.write(f"Query URL: {response.url}")  # Debugging query
+    if response.status_code == 200:
+        geojson_data = response.json()
+        if "features" in geojson_data:
+            combined_geojson["features"].extend(geojson_data["features"])
+            st.write(f"Combined GeoJSON: {combined_geojson}")  # Debugging GeoJSON
+    else:
+        st.error(f"API request failed with status code {response.status_code}")
+        return
 
     # Check if any polygons were found
     if combined_geojson["features"]:

@@ -461,9 +461,10 @@ proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
         check_proposed_name(proposed_name.upper().strip())
-        if disallowed_prefixes:
-            render_disallowed_prefix_map(disallowed_prefixes, api_url)
-        else:
-            st.warning("No disallowed prefixes to display on the map.")
     else:
         st.warning("Please enter a valid street name.")
+
+if disallowed_prefixes:
+    render_disallowed_prefix_map(disallowed_prefixes, api_url)
+else:
+    st.warning("No disallowed prefixes to display on the map.")

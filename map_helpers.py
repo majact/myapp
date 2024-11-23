@@ -3,8 +3,9 @@ import streamlit as st
 import folium
 import requests
 from shapely.geometry import shape
+prefixzones_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
 
-def render_disallowed_prefix_map(disallowed_prefixes, api_url):
+def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
     """
     Renders a Folium map with polygons matching the disallowed prefixes.
 
@@ -42,7 +43,7 @@ def render_disallowed_prefix_map(disallowed_prefixes, api_url):
         }
 
         # Perform the API request
-        response = requests.get(api_url, params=params)
+        response = requests.get(prefixzones_url, params=params)
 
         if response.status_code == 200:
             geojson_data = response.json()
@@ -86,7 +87,4 @@ def render_disallowed_prefix_map(disallowed_prefixes, api_url):
         st.warning("No polygons found for the disallowed prefixes.")
 
 
-# Example Usage
-disallowed_prefixes = ['NW', 'SE', 'SW']
-api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
-render_disallowed_prefix_map(disallowed_prefixes, api_url)
+

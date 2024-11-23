@@ -471,7 +471,7 @@ if st.button("Check Name"):
         # Check and render the map for disallowed prefixes
         
         if disallowed_prefixes:
-            render_disallowed_prefix_map(disallowed_prefixes, api_url)
+            render_disallowed_prefix_map(list(disallowed_prefixes), api_url)  # Convert set to list
         else:
             st.warning("No disallowed prefixes to display on the map.")
     else:

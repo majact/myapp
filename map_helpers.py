@@ -1,5 +1,6 @@
 from streamlit_folium import st_folium
 import folium
+import requests
 
 def render_disallowed_prefix_map(disallowed_prefixes, api_url):
     """

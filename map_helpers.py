@@ -10,20 +10,18 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
 
     Args:
         disallowed_prefixes (list): A collection of disallowed prefixes.
-        api_url (str): The AGOL feature layer URL.
+        prefixzones_url (str): The AGOL feature layer URL.
     """
-    # Debug: Print the incoming prefixes
-    st.write(f"Prefixes to query: {disallowed_prefixes}")
+    st.write(f"Prefixes to query: {disallowed_prefixes}")  # Debug
 
-    # Use session state to retain combined GeoJSON
-    if "combined_geojson" not in st.session_state:
-        st.session_state.combined_geojson = {"type": "FeatureCollection", "features": []}
-
-    # If prefixes have changed, re-query
-    if st.session_state.get("last_prefixes") != disallowed_prefixes:
+    # Check if prefixes are unchanged; if so, reuse the existing map data
+    if st.session_state.last_prefixes == disallowed_prefixes:
+        st.info("Using cached GeoJSON data.")
+    else:
+        # Update session state with the new prefixes
         st.session_state.last_prefixes = disallowed_prefixes
 
-        # Prepare a combined GeoJSON to hold all matching polygons
+        # Prepare a combined GeoJSON for new query results
         combined_geojson = {"type": "FeatureCollection", "features": []}
 
         if not disallowed_prefixes:
@@ -48,13 +46,13 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
             geojson_data = response.json()
             if "features" in geojson_data:
                 combined_geojson["features"].extend(geojson_data["features"])
-                st.session_state.combined_geojson = combined_geojson
+                st.session_state.combined_geojson = combined_geojson  # Cache the result
                 st.write(f"Combined GeoJSON: {combined_geojson}")
         else:
             st.error(f"API request failed with status code {response.status_code}")
             return
 
-    # Use session state GeoJSON for map rendering
+    # Use the cached GeoJSON data
     combined_geojson = st.session_state.combined_geojson
 
     # Check if any polygons were found
@@ -84,8 +82,3 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         st_folium(m, width=700, height=500)
     else:
         st.warning("No polygons found for the disallowed prefixes.")
-
-
-
-
-

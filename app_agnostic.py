@@ -464,7 +464,4 @@ if st.button("Check Name"):
     else:
         st.warning("Please enter a valid street name.")
 
-if disallowed_prefixes:
-    render_disallowed_prefix_map(disallowed_prefixes, api_url)
-else:
-    st.warning("No disallowed prefixes to display on the map.")
+

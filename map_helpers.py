@@ -1,3 +1,6 @@
+from streamlit_folium import st_folium
+import folium
+
 def render_disallowed_prefix_map(disallowed_prefixes, api_url):
     """
     Renders a Folium map with polygons matching the disallowed prefixes.

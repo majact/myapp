@@ -3,7 +3,7 @@ import streamlit as st
 import folium
 import requests
 
-def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url="https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"):
+def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
     """
     Renders a Folium map with polygons matching the disallowed prefixes.
 

@@ -408,8 +408,6 @@ def display_feedback(feedback, status="info", platform="streamlit"):
 # called by user input
 # calls multiple functions to evaluate name, format the results, and display results according to the platform 
 def check_proposed_name(proposed_name, platform="streamlit"):
-    # called by display_feedback
-    # calls 6 functions
     issues = []
     disapproved = False
 
@@ -447,19 +445,14 @@ def check_proposed_name(proposed_name, platform="streamlit"):
     if issues:
         full_feedback = "\n\n".join(issues)
         display_feedback(full_feedback, status="error", platform=platform)
-        return full_feedback
+        return full_feedback, disallowed_prefixes
     else:
         success_message = f"Proposed name '{proposed_name}' meets all criteria."
         display_feedback(success_message, status="success", platform=platform)
-        return success_message
+        return success_message, disallowed_prefixes
 
 
-# Assuming you already have disallowed_prefixes from your existing logic
-if disallowed_prefixes:  # If there are any disallowed prefixes
-    # Render the map with the disallowed prefixes
-    render_disallowed_prefix_map(disallowed_prefixes, api_url)
-else:
-    st.warning("No disallowed prefixes found.")
+
 
 
 

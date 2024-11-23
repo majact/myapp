@@ -472,7 +472,7 @@ if st.button("Check Name"):
         full_feedback, disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())
         
         st.session_state.last_prefixes = disallowed_prefixes  # Store prefixes in session state
-        
+        disallowed_prefixes = list(disallowed_prefixes)
         if disallowed_prefixes:
             render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url)
         else:

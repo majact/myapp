@@ -3,13 +3,13 @@ import streamlit as st
 import folium
 import requests
 
-def render_disallowed_prefix_map(disallowed_prefixes, api_url):
+def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url="https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"):
     """
     Renders a Folium map with polygons matching the disallowed prefixes.
 
     Args:
         disallowed_prefixes (list): A collection of disallowed prefixes.
-        api_url (str): The AGOL feature layer URL.
+        prefixzones_url (str): The AGOL feature layer query URL.
     """
     # Debug: Print the incoming prefixes
     st.write(f"Prefixes to query: {disallowed_prefixes}")  # Debugging in Streamlit
@@ -34,7 +34,7 @@ def render_disallowed_prefix_map(disallowed_prefixes, api_url):
     }
 
     # Perform the API request
-    response = requests.get(api_url, params=params)
+    response = requests.get(prefixzones_url, params=params)
 
     # Debug: Log the query URL and response status
     st.write(f"Query URL: {response.url}")  # Debugging query

@@ -11,6 +11,7 @@ from map_helpers import render_disallowed_prefix_map
 
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
+prefixzones_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer"
 
 # Query all data from the feature layer using the REST API
 params = {
@@ -471,7 +472,7 @@ if st.button("Check Name"):
         st.write(f"Disallowed Prefixes to Render: {disallowed_prefixes}")  # Add here
         
         if disallowed_prefixes:
-            render_disallowed_prefix_map(list(disallowed_prefixes), api_url)  # Convert set to list
+            render_disallowed_prefix_map(list(disallowed_prefixes), prefixzones_url)  # Convert set to list
         else:
             st.warning("No disallowed prefixes to display on the map.")
     else:

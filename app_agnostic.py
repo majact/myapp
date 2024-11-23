@@ -468,18 +468,12 @@ st.title("Proposed Name Checker")
 proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
-        # Capture both feedback and disallowed prefixes
-        feedback, disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())  # Unpack the returned values
-
-        # Display the feedback
-        st.write(feedback)
-
-
-        disallowed_prefixes = list(disallowed_prefixes)
-        st.write(f"Disallowed Prefixes to Render: {disallowed_prefixes}")  # Add here
+        # Call check_proposed_name to get disallowed prefixes
+        disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())
+        st.session_state.last_prefixes = disallowed_prefixes  # Store prefixes in session state
         
         if disallowed_prefixes:
-            render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url)  # Convert set to list
+            render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url)
         else:
             st.warning("No disallowed prefixes to display on the map.")
     else:

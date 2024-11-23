@@ -25,6 +25,7 @@ def render_disallowed_prefix_map(disallowed_prefixes, api_url):
             geojson_data = response.json()
             if "features" in geojson_data:
                 combined_geojson["features"].extend(geojson_data["features"])
+                print("Combined" + combined_geojson)
         else:
             st.error(f"Failed to query prefix '{prefix}': {response.status_code}")
 

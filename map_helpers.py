@@ -12,6 +12,10 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         disallowed_prefixes (list): A collection of disallowed prefixes.
         prefixzones_url (str): The AGOL feature layer URL.
     """
+    # Validate input type
+    if not isinstance(disallowed_prefixes, list):
+        st.error("Invalid prefixes format. Expected a list.")
+        return
     st.write(f"Prefixes to query: {disallowed_prefixes}")  # Debug
 
     # Check if prefixes are unchanged; if so, reuse the existing map data

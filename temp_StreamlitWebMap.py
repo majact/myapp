@@ -1,52 +1,65 @@
-import streamlit as st
+from streamlit_folium import st_folium
 import folium
 import requests
-from streamlit_folium import st_folium
 from shapely.geometry import shape
 
-# AGOL Feature Layer REST URL
-feature_layer_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
+def render_disallowed_prefix_map(disallowed_prefixes, api_url):
+    """
+    Renders a Folium map with polygons matching the disallowed prefixes.
 
-# Function to query AGOL feature layer
-def query_features(prefix):
+    Args:
+        disallowed_prefixes (list): A collection of disallowed prefixes.
+        api_url (str): The AGOL feature layer URL.
+    """
+    # Debug: Print the incoming prefixes
+    print(f"Prefixes to query: {disallowed_prefixes}")
+
+    # Prepare a combined GeoJSON to hold all matching polygons
+    combined_geojson = {"type": "FeatureCollection", "features": []}
+
+    # Handle empty prefix list gracefully
+    if not disallowed_prefixes:
+        print("No disallowed prefixes provided.")
+        return
+
+    # Construct the SQL `IN` clause
+    where_clause = " OR ".join([f"Prefix='{prefix}'" for prefix in disallowed_prefixes])
+
+    # Prepare query parameters
     params = {
-        "where": f"Prefix='{prefix}'",  # Dynamic filtering based on user input
-        "outFields": "*",  # Retrieve all fields
-        "f": "geojson",  # GeoJSON format for use with folium
-        "returnGeometry": "true",  # Include geometry
+        "where": where_clause,
+        "outFields": "*",
+        "f": "geojson",
+        "returnGeometry": "true",
     }
-    response = requests.get(feature_layer_url, params=params)
+
+    # Perform the API request
+    response = requests.get(api_url, params=params)
+
     if response.status_code == 200:
-        return response.json()  # Return GeoJSON for rendering
+        geojson_data = response.json()
+        if "features" in geojson_data:
+            combined_geojson["features"].extend(geojson_data["features"])
+            print(f"Combined GeoJSON: {combined_geojson}")
     else:
-        st.error(f"Failed to query features: {response.status_code}")
-        return None
+        print(f"API request failed with status code {response.status_code}")
+        return
 
-# Streamlit App
-st.title("Dynamic Map Viewer with Filtering")
-
-# User Input for Prefix
-prefix = st.text_input("Enter prefix to filter (e.g., 'SE')", value="SE")
-
-# Query the features based on user input
-geojson_data = query_features(prefix)
-
-# Render the map with folium
-if geojson_data and "features" in geojson_data and geojson_data["features"]:
-    try:
-        # Handle non-point geometries (e.g., polygons) by calculating the centroid
-        first_geometry = geojson_data["features"][0]["geometry"]
+    # Check if any polygons were found
+    if combined_geojson["features"]:
+        # Center map on the first polygon's centroid
+        first_geometry = combined_geojson["features"][0]["geometry"]
         shapely_geometry = shape(first_geometry)
         centroid = shapely_geometry.centroid
         map_center = [centroid.y, centroid.x]
 
-        # Create a folium map centered on the first feature's centroid
+        # Create a Folium map centered on the centroid
         m = folium.Map(location=map_center, zoom_start=12)
 
-        # Add GeoJSON layer to map
+        # Add the GeoJSON layer to the map
         folium.GeoJson(
-            geojson_data,
-            name="Filtered Features",
+            combined_geojson,
+            name="Disallowed Prefixes",
             style_function=lambda x: {
                 "fillColor": "red",
                 "color": "red",
@@ -57,8 +70,11 @@ if geojson_data and "features" in geojson_data and geojson_data["features"]:
 
         # Display the map in Streamlit
         st_folium(m, width=700, height=500)
+    else:
+        print("No polygons found for the disallowed prefixes.")
 
-    except Exception as e:
-        st.error(f"An error occurred while processing geometries: {e}")
-else:
-    st.warning("No features found for the entered prefix.")
+
+disallowed_prefixes = ['NW', 'SE', 'SW']
+api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
+render_disallowed_prefix_map(disallowed_prefixes, api_url)
+

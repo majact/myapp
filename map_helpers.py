@@ -51,19 +51,17 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         st.error(f"Query failed with status code {response.status_code}.")
         return
 
-    if not combined_geojson["features"]:
-        st.warning("No polygons found to render.")
-        return
-    else:
-        st.write(f"Features to Render: {combined_geojson['features']}")
-
+if combined_geojson["features"]:
+    # Center map on the first polygon's centroid
     first_geometry = combined_geojson["features"][0]["geometry"]
     shapely_geometry = shape(first_geometry)
     centroid = shapely_geometry.centroid
     map_center = [centroid.y, centroid.x]
 
+    # Create a Folium map centered on the centroid
     m = folium.Map(location=map_center, zoom_start=12)
 
+    # Add the GeoJSON layer to the map
     folium.GeoJson(
         combined_geojson,
         name="Disallowed Prefixes",
@@ -75,4 +73,8 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
         },
     ).add_to(m)
 
+    # Display the map in Streamlit
     st_folium(m, width=700, height=500)
+else:
+    st.warning("No polygons found for the disallowed prefixes.")
+

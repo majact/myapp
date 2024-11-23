@@ -85,10 +85,7 @@ def render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url):
     else:
         st.warning("No polygons found for the disallowed prefixes.")
 
-# Example Usage
-disallowed_prefixes = ['NW', 'SE', 'SW']
-api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/DirectionalPrefixZonest/FeatureServer/0/query"
-render_disallowed_prefix_map(disallowed_prefixes, api_url)
+
 
 
 

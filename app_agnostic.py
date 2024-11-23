@@ -472,9 +472,10 @@ if st.button("Check Name"):
         full_feedback, disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())
         
         st.session_state.last_prefixes = disallowed_prefixes  # Store prefixes in session state
-        disallowed_prefixes = list(disallowed_prefixes)
+        prefix_list = list(disallowed_prefixes)
+        st.write(f"Converted Prefix List: {prefix_list}")  # Debugging statement
         if disallowed_prefixes:
-            render_disallowed_prefix_map(disallowed_prefixes, prefixzones_url)
+            render_disallowed_prefix_map(prefix_list, prefixzones_url)
         else:
             st.warning("No disallowed prefixes to display on the map.")
     else:

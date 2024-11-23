@@ -457,7 +457,7 @@ def check_proposed_name(proposed_name, platform="streamlit"):
     else:
         success_message = f"Proposed name '{proposed_name}' meets all criteria."
         display_feedback(success_message, status="success", platform=platform)
-        return success_message, disallowed_prefixes
+        return success_message
 
 
 
@@ -469,7 +469,8 @@ proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
         # Call check_proposed_name to get disallowed prefixes
-        disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())
+        full_feedback, disallowed_prefixes = check_proposed_name(proposed_name.upper().strip())
+        
         st.session_state.last_prefixes = disallowed_prefixes  # Store prefixes in session state
         
         if disallowed_prefixes:

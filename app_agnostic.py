@@ -6,6 +6,12 @@ import streamlit as st
 import re
 from map_helpers import render_disallowed_prefix_map
 
+# Initialize session state variables
+if "combined_geojson" not in st.session_state:
+    st.session_state.combined_geojson = {"type": "FeatureCollection", "features": []}
+
+if "last_prefixes" not in st.session_state:
+    st.session_state.last_prefixes = None
 
 
 

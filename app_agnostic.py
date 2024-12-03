@@ -37,7 +37,7 @@ city_names = ['BEAVERTON', 'TIGARD']
 county_names = ['MALHEUR']
 
 # Common arterial street names that should be excluded
-arterial_names = ["APPLE",
+arterial_names = [
     "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARNES", "BASELINE",
     "BEAVERCREEK", "BEEF BEND", "BELMONT", "BERTHA", "BOECKMAN", "BONITA", "BOONE", "BORLAND",
     "BROOKWOOD", "BROADWAY", "BURNSIDE", "CANYON", "CAPITOL", "CHILDS", "CORNELIUS", "CORNELL",
@@ -61,7 +61,7 @@ cardinal_names = ["NORTH", "SOUTH", "EAST", "WEST"]  # Cardinal directions
 usps_names = ["AVENUE", "PLACE", "WAY", "TERRACE", "DRIVE", "STREET"]  # USPS street types
 
 # Common name starts that might be excluded due to duplication or ambiguity
-name_starts = [
+name_starts = ["APPLE",
     "GREEN", "BLUE", "WHITE", "BROWN", "BLACK", "RED", "YELLOW", "PURPLE", "GREY", "GRAY", "ORANGE",
     "ALBERT", "ALEX", "ALTA", "ARCH", "ASH", "BARN", "BASE", "BAY", "BEAVER", "BEEF", "BELL", "BERNARD",
     "BIG", "BOONE", "BOUND", "BOX", "BRAD", "BRAN", "BROWN", "BRIGHT", "BROOK", "BRUN", "BUCK",

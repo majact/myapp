@@ -37,7 +37,7 @@ city_names = ['BEAVERTON', 'TIGARD']
 county_names = ['MALHEUR']
 
 # Common arterial street names that should be excluded
-arterial_names = [
+arterial_names = ["APPLE",
     "ALLEN", "APIARY", "BALD PEAK", "BANY", "BARBER", "BARBUR", "BARNES", "BASELINE",
     "BEAVERCREEK", "BEEF BEND", "BELMONT", "BERTHA", "BOECKMAN", "BONITA", "BOONE", "BORLAND",
     "BROOKWOOD", "BROADWAY", "BURNSIDE", "CANYON", "CAPITOL", "CHILDS", "CORNELIUS", "CORNELL",

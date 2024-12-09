@@ -82,12 +82,12 @@ name_starts = ["APPLE",
     "YORK"
 ]
 
-repeated_letter_exceptions = {"AGREE", "WELL", "BUTTER", "AGREEMENT", "TREE", "WOOD", "BELL", "WHEEL",
-                              "PEPPER", "APPLE", "MILL", "CRESS", "STILL", "FALL", "PENNY", "PATTER", "BOOK",
-                              "CROSS", "MOOSE", "MELLOW", "MAMMOTH", "POOL", "BERRY", "KITTY", "JOLLY", "HUGG",
-                              "HOOVER", "HAGGER", "GULL", "FREE", "DUFF", "BILL", "DEEP", "LESS", "CHOPP", "CLAPP",
-                              "CLIFF", "PASS", "COOL", "COPPER", "DELL", "COSTELLO", "BROOK", "DANNER", "NESS",
-                              "GOOD", "STALL", "SUCCESS", "VANILLA", "YARNELL", "ZIPPER", "HILL", "PIONEER"}
+repeated_letter_exceptions = {"AGREE", "AGREEMENT", "APPLE", "BELL", "BERRY", "BILL", "BOOK", "BROOK", "BUTTER", "CHOPP", "CLAPP", "CLIFF",
+ "COOL", "COPPER", "COSTELLO", "CRESS", "CROSS", "DANNER", "DEEP", "DELL", "DUFF", "FALL", "FREE", "GOOD", "GREEN", 
+ "GULL", "HAGGER", "HILL", "HOOVER", "HUGG", "JOLLY", "KITTY", "LESS", "MAMMOTH", "MELLOW", "MILL", "MOOSE", 
+ "NESS", "PATTER", "PEPPER", "PENNY", "PIONEER", "POOL", "STALL", "STILL", "SUCCESS", "TREE", "VANILLA", 
+ "WELL", "WHEEL", "WOOD", "YARNELL", "ZIPPER"}
+
 problematic_combination_exceptions = {"FIELD", "BOUND", "DUCK", "BUCK"}
 usps_street_type_exceptions = {"SPARK"}
 ends_with_exceptions = {"VALE", "DALE", "SAFARI", "ABLE"}

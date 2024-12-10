@@ -331,7 +331,7 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city)
 
     # Construct query parameters
     query_params = {
-        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='{selected_city}'",
+        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='TIGARD'",
         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
         "f": "json",
     }

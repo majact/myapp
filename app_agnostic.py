@@ -21,7 +21,7 @@ if response.status_code == 200:
     features = response.json().get("features", [])
     existing_data = pd.DataFrame([feature["attributes"] for feature in features])
     print("Street data loaded successfully.")
-    print(f"Number of records in the feature layer: {len(features)}")
+    st.write(f"Number of records in the feature layer: {len(features)}")
 else:
     print(f"Failed to load data. Status code: {response.status_code}")
 

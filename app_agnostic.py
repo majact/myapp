@@ -25,7 +25,7 @@ if response.status_code == 200:
 else:
     print(f"Failed to load data. Status code: {response.status_code}")
 
-
+print(f"Number of records in the feature layer: {len(features)}")
 
 # Lists for disallowed names based on category (e.g., business, city, county, arterial)
 # These lists will be used later in the script to filter out unwanted names

@@ -30,11 +30,14 @@ print(f"Number of records in the feature layer: {len(features)}")
 
 # Mapping of communities to their neighboring communities
 community_neighbors = {
-    "TIGARD": ["TIGARD", "BEAVERTON", "SHERWOOD"],
-    "BEAVERTON": ["BEAVERTON", "TIGARD", "HILLSBORO"],
-    "FOREST GROVE": ["FOREST GROVE", "CORNELIUS", "HILLSBORO"]
+    "WASHINGTON COUNTY": [
+        "BANKS", "BEAVERTON", "BUXTON", "CORNELIUS", "FOREST GROVE", "GALES CREEK", "GASTON",
+        "HILLSBORO", "LAKE OSWEGO", "MANNING", "NEWBERG", "NORTH PLAINS", "PORTLAND", "SCAPPOOSE",
+        "SHERWOOD", "TIGARD", "TIMBER", "TUALATIN", "VERNONIA", "WEST LINN", "WILSONVILLE"
+    ],
+    "COLUMBIA COUNTY": [],
+    "CLACKAMAS COUNTY": []
 }
-
 
 # Lists for disallowed names based on category (e.g., business, city, county, arterial)
 # These lists will be used later in the script to filter out unwanted names
@@ -640,7 +643,7 @@ st.title("Proposed Name Checker")
 
 proposed_name = st.text_input("Enter the proposed street name:")
 # Dropdown for city selection
-selected_city = st.selectbox("Select the community:", ["Beaverton", "Forest Grove", "Tigard"])
+selected_city = st.selectbox("Select the county:", ["Washington County", "Columbia County", "Clackamas County")
 if st.button("Check Name"):
     if proposed_name.strip():
         check_proposed_name(proposed_name.upper().strip(), selected_city.upper().strip())

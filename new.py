@@ -37,24 +37,27 @@ def fetch_data():
         st.error(f"Failed to load data from AGOL. Status code: {response.status_code}")
         return pd.DataFrame()  # Return empty DataFrame if the request fails
 
-# Load data
+# Load the full dataset once
 regional_data = fetch_data()
-st.write(f"Loaded {len(regional_data)} total records from AGOL.")  # Debugging information
 
-if st.button("Check Name"):
-    if not proposed_name.strip():
-        st.warning("Please enter a valid street name.")
-    else:
-        # Filter data based on selected community
-        allowed_communities = community_groups[selected_community]
-        filtered_data = regional_data[regional_data["MSAGComm_L"].isin(allowed_communities)]
+if not regional_data.empty:
+    st.write(f"Loaded {len(regional_data)} total records from AGOL.")  # Debugging: Total dataset size
 
-        # Debugging: Display filtered dataset
-        st.write(f"Filtered Data (for communities {', '.join(allowed_communities)}):")
-        st.write(filtered_data)
+    # Filter data dynamically based on the selected community
+    allowed_communities = community_groups[selected_community]
+    filtered_data = regional_data[regional_data["MSAGComm_L"].isin(allowed_communities)]
 
-        # Check if proposed name exists in the filtered data
-        if proposed_name.upper() in filtered_data["LSt_Name"].values:
-            st.success(f"The street name '{proposed_name}' already exists in the selected area.")
+    st.write(f"Filtered {len(filtered_data)} records for communities: {', '.join(allowed_communities)}")  # Debugging: Filtered size
+    st.write(filtered_data.head())  # Show a sample of filtered records for verification
+
+    if st.button("Check Name"):
+        if not proposed_name.strip():
+            st.warning("Please enter a valid street name.")
         else:
-            st.info(f"The street name '{proposed_name}' is available in the selected area.")
+            # Check if the proposed name exists in the filtered data
+            if proposed_name.upper() in filtered_data["LSt_Name"].values:
+                st.success(f"The street name '{proposed_name}' already exists in the selected area.")
+            else:
+                st.info(f"The street name '{proposed_name}' is available in the selected area.")
+else:
+    st.error("Failed to load any data. Please check your AGOL layer or connection.")

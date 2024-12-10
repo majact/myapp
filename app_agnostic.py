@@ -25,6 +25,7 @@ params = {
 
 # Streamlit UI for user agency selection
 st.title("Proposed Name Checker")
+# Dropdown for city selection
 selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))
 
 # Apply filtering logic based on the selected city
@@ -50,15 +51,7 @@ if st.button("Check Name"):
     else:
         st.warning("Please enter a valid street name.")
 
-# Step 3: Apply filtering logic based on selected city
-if selected_city:
-    search_cities = city_search_areas[selected_city]  # Get cities for the selected area
-    where_clause = " OR ".join([f"MSAGComm_L = '{city}'" for city in search_cities])  # Build dynamic WHERE clause
-    params = {  # Update params dynamically
-        "where": where_clause,  # Use dynamic WHERE clause
-        "outFields": "*",  # Retrieve all fields
-        "f": "json",  # Format the response as JSON
-    }
+
 
 # # Query all data from the feature layer using the REST API
 # params = {

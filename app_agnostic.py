@@ -23,41 +23,39 @@ params = {
     "f": "json",  # Format the response as JSON
 }
 
-# Streamlit UI for user agency selection
+# Fetch the full dataset once
+@st.cache
+def load_data():
+    params = {
+        "where": "1=1",  # Fetch all records
+        "outFields": "*",  # Retrieve all fields
+        "f": "json",  # Format the response as JSON
+    }
+    response = requests.get(api_url, params=params)
+    if response.status_code == 200:
+        features = response.json().get("features", [])
+        return pd.DataFrame([feature["attributes"] for feature in features])
+    else:
+        st.error(f"Failed to load data. Status code: {response.status_code}")
+        return pd.DataFrame()  # Return empty DataFrame if loading fails
+
+# Streamlit Title
 st.title("Proposed Name Checker")
-# Dropdown for city selection
+
+# Dropdown for mailing city selection
 selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))
 
-# Apply filtering logic based on selected city
-if selected_city:  # Ensure a city is selected
+# Load the full dataset once
+regional_data = load_data()
+
+# Filter the dataset locally
+if not regional_data.empty and selected_city:
     search_cities = city_search_areas[selected_city]
-    where_clause = " OR ".join([f"MSAGComm_L = '{city}'" for city in search_cities])  # Build dynamic WHERE clause
-    
-    # Update the 'where' key in params dynamically
-    params = {
-        "where": where_clause,
-        "outFields": "*",
-        "f": "json",
-    }
-
-    # Debugging: Print the query parameters
-    st.write("Generated WHERE clause:", where_clause)
-    st.write("Query Parameters:", params)
-
-    # Query the feature layer
-    response = requests.get(api_url, params=params)
-if response.status_code == 200:
-    features = response.json().get("features", [])
-    existing_data = pd.DataFrame([feature["attributes"] for feature in features])
-    st.write("Raw Features:", features)  # Debugging: Print raw response data
-
-    # Apply local filtering
-    existing_data = existing_data[existing_data["MSAGComm_L"].isin(search_cities)]
-    st.success(f"Filtered {len(existing_data)} records locally for search area: {', '.join(search_cities)}.")
+    filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
+    st.success(f"Filtered {len(filtered_data)} records for search area: {', '.join(search_cities)}.")
+    st.write(filtered_data)  # Display filtered data for debugging
 else:
-    st.error(f"Failed to load data. Status code: {response.status_code}")
-    st.write("Response Text:", response.text)  # Debugging: Print response text
-
+    st.warning("No data to display. Check your dataset or city selection.")
 
 
 # Lists for disallowed names based on category (e.g., business, city, county, arterial)
@@ -484,13 +482,11 @@ def check_proposed_name(proposed_name, platform="streamlit"):
         return success_message
 
 
-
 # Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
-        result = check_proposed_name(proposed_name.upper().strip())
-        st.success(result)  # Display the result
+        st.write(f"Checking name: {proposed_name.upper().strip()}")  # Placeholder for name-checking logic
     else:
         st.warning("Please enter a valid street name.")
 

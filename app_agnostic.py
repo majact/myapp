@@ -487,7 +487,7 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
     """
     issues = []
     disapproved = False
-
+    st.write(f"check_proposed_name function started for: {proposed_name}")
     # Add this check
     if filtered_data.empty:
         return "No relevant data found for the selected city. Please adjust your selection."

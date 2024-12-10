@@ -488,6 +488,10 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
     issues = []
     disapproved = False
 
+    # Add this check
+    if filtered_data.empty:
+        return "No relevant data found for the selected city. Please adjust your selection."
+    
     # Step 1: Check if the proposed name is disallowed
     disallowed_reason = is_disallowed_name(proposed_name)
     if disallowed_reason:

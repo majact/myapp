@@ -23,7 +23,7 @@ params = {
     "f": "json",  # Format the response as JSON
 }
 
-# Fetch the full dataset once
+# Function to fetch the full dataset
 @st.cache
 def load_data():
     params = {
@@ -293,7 +293,7 @@ def is_disallowed_name(proposed_name):
 
 # called by check_proposed_name - checks conflicts with existing names
 # result provides the input parameters for format_conflict_results
-def detect_conflicts(proposed_name, relevant_name_start, api_url):
+def detect_conflicts(proposed_name, relevant_name_start, filtered_data):
     # Sanitize inputs
     proposed_name = str(proposed_name).strip()
     relevant_name_start = str(relevant_name_start).strip()
@@ -435,9 +435,56 @@ def display_feedback(feedback, status="info", platform="streamlit"):
 
 # called by user input
 # calls multiple functions to evaluate name, format the results, and display results according to the platform 
-def check_proposed_name(proposed_name, platform="streamlit"):
-    # called by display_feedback
-    # calls 6 functions
+# def check_proposed_name(proposed_name, platform="streamlit"):
+#     # called by display_feedback
+#     # calls 6 functions
+#     issues = []
+#     disapproved = False
+
+#     # Step 1: Check if the proposed name is disallowed
+#     disallowed_reason = is_disallowed_name(proposed_name)
+#     if disallowed_reason:
+#         issues.append(disallowed_reason)
+#         disapproved = True
+
+#     # Step 2: Check if the name starts with a banned prefix
+#     banned_start_reason = check_banned_name_start(proposed_name, banned_name_starts)
+#     if banned_start_reason:
+#         issues.append(banned_start_reason)
+#         disapproved = True
+
+#     # Step 3: Check spelling and pronunciation
+#     status, feedback = evaluate_word(proposed_name, repeated_letter_exceptions, problematic_combination_exceptions,
+#                                      disallowed_ends_with, ends_with_exceptions, homophones)
+#     if status == "Disapproved":
+#         issues.append(feedback)
+#         disapproved = True
+
+#     # Step 4: Detect conflicts if no disapproval
+#     if not disapproved:
+#         relevant_name_start = matches_namestart(proposed_name, name_starts)
+#         conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities = detect_conflicts(
+#             proposed_name, relevant_name_start, api_url
+#         )
+#         if conflicts:
+#             conflict_summary = format_conflict_results(proposed_name, conflicts, disallowed_prefixes,
+#                                                        disallowed_ranges, disallowed_types, disallowed_cities)
+#             issues.append(conflict_summary)
+
+#     # Step 5: Display results
+#     if issues:
+#         full_feedback = "\n\n".join(issues)
+#         display_feedback(full_feedback, status="error", platform=platform)
+#         return full_feedback
+#     else:
+#         success_message = f"Proposed name '{proposed_name}' meets all criteria."
+#         display_feedback(success_message, status="success", platform=platform)
+#         return success_message
+
+def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
+    """
+    Enhanced version of check_proposed_name to work with filtered_data.
+    """
     issues = []
     disapproved = False
 
@@ -463,8 +510,10 @@ def check_proposed_name(proposed_name, platform="streamlit"):
     # Step 4: Detect conflicts if no disapproval
     if not disapproved:
         relevant_name_start = matches_namestart(proposed_name, name_starts)
+
+        # Modified detect_conflicts to use filtered_data
         conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities = detect_conflicts(
-            proposed_name, relevant_name_start, api_url
+            proposed_name, relevant_name_start, filtered_data
         )
         if conflicts:
             conflict_summary = format_conflict_results(proposed_name, conflicts, disallowed_prefixes,
@@ -480,7 +529,6 @@ def check_proposed_name(proposed_name, platform="streamlit"):
         success_message = f"Proposed name '{proposed_name}' meets all criteria."
         display_feedback(success_message, status="success", platform=platform)
         return success_message
-
 
 # Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")

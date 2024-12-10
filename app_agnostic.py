@@ -535,17 +535,22 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
 
 
 # Input for proposed name
+# Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")
+
 if st.button("Check Name"):
+    # Confirm user input
     if proposed_name.strip():
         st.write(f"Checking name: {proposed_name.upper().strip()}")  # Debugging user input
-        
-        # Run filtering only after clicking "Check Name"
+
+        # Filter data AFTER button click
         if not regional_data.empty and selected_city:
             search_cities = city_search_areas[selected_city]
             filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
+
+            # Display debug information about the filtering process
             st.write(f"Filtered {len(filtered_data)} records for search area: {', '.join(search_cities)}.")
-            
+
             # Pass filtered data to the check_proposed_name function
             result = check_proposed_name(proposed_name.upper().strip(), filtered_data)
             st.write(result)  # Display the result
@@ -553,6 +558,7 @@ if st.button("Check Name"):
             st.warning("No data to display. Check your dataset or city selection.")
     else:
         st.warning("Please enter a valid street name.")
+
 
 
 

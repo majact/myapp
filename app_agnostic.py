@@ -48,15 +48,9 @@ selected_city = st.selectbox("Select your agency's mailing city:", options=list(
 # Load the full dataset once
 regional_data = load_data()
 
-# Filter the dataset locally
 
-if not regional_data.empty and selected_city:
-    search_cities = city_search_areas[selected_city]
-    filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
-    st.success(f"Filtered {len(filtered_data)} records for search area: {', '.join(search_cities)}.")
-    st.write(f"Filtered data contains {len(filtered_data)} records. Sample: {filtered_data.head(3)}")  # Add this debug statement
-else:
-    st.warning("No data to display. Check your dataset or city selection.")
+
+
 
 
 
@@ -544,12 +538,21 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
 proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
-        st.write(f"Checking name: {proposed_name.upper().strip()}")  # Debugging
-        result = check_proposed_name(proposed_name.upper().strip(), filtered_data)
-        st.write(result)  # Ensure the result is displayed
+        st.write(f"Checking name: {proposed_name.upper().strip()}")  # Debugging user input
+        
+        # Run filtering only after clicking "Check Name"
+        if not regional_data.empty and selected_city:
+            search_cities = city_search_areas[selected_city]
+            filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
+            st.write(f"Filtered {len(filtered_data)} records for search area: {', '.join(search_cities)}.")
+            
+            # Pass filtered data to the check_proposed_name function
+            result = check_proposed_name(proposed_name.upper().strip(), filtered_data)
+            st.write(result)  # Display the result
+        else:
+            st.warning("No data to display. Check your dataset or city selection.")
     else:
         st.warning("Please enter a valid street name.")
-
 
 
 

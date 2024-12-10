@@ -85,7 +85,7 @@ name_starts = ["APPLE",
 repeated_letter_exceptions = {"AGREE", "AGREEMENT", "APPLE", "BELL", "BERRY", "BILL", "BOOK", "BROOK", "BUTTER", "CHOPP", "CLAPP", "CLIFF",
  "COOL", "COPPER", "COSTELLO", "CRESS", "CROSS", "DANNER", "DEEP", "DELL", "DUFF", "FALL", "FREE", "GOOD", "GREEN", 
  "GULL", "HAGGER", "HILL", "HOOVER", "HUGG", "JOLLY", "KITTY", "LESS", "MAMMOTH", "MELLOW", "MILL", "MOOSE", 
- "NESS", "PATTER", "PEPPER", "PENNY", "PIONEER", "POOL", "STALL", "STILL", "SUCCESS", "TREE", "VANILLA", 
+ "NESS", "PATTER", "PEPPER", "PENNY", "PIONEER", "POOL", "POTTER", "STALL", "STILL", "SUCCESS", "TREE", "VANILLA", 
  "WELL", "WHEEL", "WOOD", "YARNELL", "ZIPPER"}
 
 problematic_combination_exceptions = {"FIELD", "BOUND", "DUCK", "BUCK"}

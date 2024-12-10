@@ -331,11 +331,11 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city)
 
     # Construct query parameters
     query_params = {
-        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='TIGARD'",
+        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='{selected_city}'",
         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
         "f": "json",
     }
-
+    st.write(f"Constructed WHERE clause: {query_params['where']}")
     # Debugging: Print URL and params
     print(f"URL: {api_url}")
     print(f"Query Params Before Encoding: {query_params}")

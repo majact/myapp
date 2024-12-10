@@ -8,6 +8,43 @@ import re
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
 
+# Define city-specific search areas
+city_search_areas = {
+    "TIGARD": ["TIGARD", "HILLSBORO", "SHERWOOD", "TUALATIN", "FOREST GROVE", "CORNELIUS"],
+    "HILLSBORO": ["HILLSBORO", "TIGARD", "FOREST GROVE", "CORNELIUS", "BEAVERTON"],
+    "SHERWOOD": ["SHERWOOD", "TIGARD", "TUALATIN", "WILSONVILLE"],
+    # Add more cities and their respective search areas as needed
+}
+
+# Streamlit UI for user agency selection
+st.title("Proposed Name Checker")
+selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))
+
+# Apply filtering logic based on the selected city
+if selected_city:
+    search_cities = city_search_areas[selected_city]
+    where_clause = " OR ".join([f"MSAGComm_L = '{city}'" for city in search_cities])
+    params["where"] = where_clause  # Update the query parameters with the city filter
+
+    # Query the feature layer with the updated filtering parameters
+    response = requests.get(api_url, params=params)
+    if response.status_code == 200:
+        features = response.json().get("features", [])
+        existing_data = pd.DataFrame([feature["attributes"] for feature in features])
+        st.success(f"Loaded {len(existing_data)} records for search area: {', '.join(search_cities)}.")
+    else:
+        st.error(f"Failed to load data for {selected_city}. Status code: {response.status_code}")
+
+# Input for proposed name and name checking
+proposed_name = st.text_input("Enter the proposed street name:")
+if st.button("Check Name"):
+    if proposed_name.strip():
+        check_proposed_name(proposed_name.upper().strip())
+    else:
+        st.warning("Please enter a valid street name.")
+
+
+
 # Query all data from the feature layer using the REST API
 params = {
     "where": "1=1",  # Select all records

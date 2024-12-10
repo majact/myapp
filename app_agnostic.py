@@ -28,40 +28,40 @@ st.title("Proposed Name Checker")
 # Dropdown for city selection
 selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))
 
-# Apply filtering logic based on the selected city
-if selected_city:
+# Apply filtering logic based on selected city
+if selected_city:  # Ensure a city is selected
     search_cities = city_search_areas[selected_city]
-    where_clause = " OR ".join([f"MSAGComm_L = '{city}'" for city in search_cities])
-    params["where"] = where_clause  # Update the query parameters with the city filter
+    where_clause = " OR ".join([f"MSAGComm_L = '{city}'" for city in search_cities])  # Build dynamic WHERE clause
+    
+    # Update the 'where' key in params dynamically
+    params = {
+        "where": where_clause,
+        "outFields": "*",
+        "f": "json",
+    }
 
-    # Query the feature layer with the updated filtering parameters
+    # Debugging: Print the query parameters
+    st.write("Generated WHERE clause:", where_clause)
+    st.write("Query Parameters:", params)
+
+    # Query the feature layer
     response = requests.get(api_url, params=params)
     if response.status_code == 200:
         features = response.json().get("features", [])
+        st.write("Raw Features:", features)  # Debugging: Print raw response data
+        
+        # Convert to DataFrame
         existing_data = pd.DataFrame([feature["attributes"] for feature in features])
+
+        # Fallback: Apply local filtering if the dataset is still unfiltered
+        if len(existing_data) == len(features):  # Check if filtering was applied
+            st.warning("Server-side filtering did not work. Applying local filtering.")
+            existing_data = existing_data[existing_data["MSAGComm_L"].isin(search_cities)]
+
         st.success(f"Loaded {len(existing_data)} records for search area: {', '.join(search_cities)}.")
     else:
         st.error(f"Failed to load data for {selected_city}. Status code: {response.status_code}")
-
-
-
-
-
-# # Query all data from the feature layer using the REST API
-# params = {
-#     "where": "1=1",  # Select all records
-#     "outFields": "*",  # Retrieve all fields
-#     "f": "json"  # Format the response as JSON
-# }
-
-response = requests.get(api_url, params=params)  # Send GET request
-if response.status_code == 200:
-    # Convert response to Pandas DataFrame
-    features = response.json().get("features", [])
-    existing_data = pd.DataFrame([feature["attributes"] for feature in features])
-    print("Street data loaded successfully.")
-else:
-    print(f"Failed to load data. Status code: {response.status_code}")
+        st.write("Response Text:", response.text)  # Debugging: Print response text
 
 
 

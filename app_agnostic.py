@@ -43,14 +43,22 @@ if st.button("Check Name"):
     else:
         st.warning("Please enter a valid street name.")
 
+# Step 3: Apply filtering logic based on selected city
+if selected_city:
+    search_cities = city_search_areas[selected_city]  # Get cities for the selected area
+    where_clause = " OR ".join([f"MSAGComm_L = '{city}'" for city in search_cities])  # Build dynamic WHERE clause
+    params = {  # Update params dynamically
+        "where": where_clause,  # Use dynamic WHERE clause
+        "outFields": "*",  # Retrieve all fields
+        "f": "json",  # Format the response as JSON
+    }
 
-
-# Query all data from the feature layer using the REST API
-params = {
-    "where": "1=1",  # Select all records
-    "outFields": "*",  # Retrieve all fields
-    "f": "json"  # Format the response as JSON
-}
+# # Query all data from the feature layer using the REST API
+# params = {
+#     "where": "1=1",  # Select all records
+#     "outFields": "*",  # Retrieve all fields
+#     "f": "json"  # Format the response as JSON
+# }
 
 response = requests.get(api_url, params=params)  # Send GET request
 if response.status_code == 200:

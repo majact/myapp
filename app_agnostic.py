@@ -46,22 +46,17 @@ if selected_city:  # Ensure a city is selected
 
     # Query the feature layer
     response = requests.get(api_url, params=params)
-    if response.status_code == 200:
-        features = response.json().get("features", [])
-        st.write("Raw Features:", features)  # Debugging: Print raw response data
-        
-        # Convert to DataFrame
-        existing_data = pd.DataFrame([feature["attributes"] for feature in features])
+if response.status_code == 200:
+    features = response.json().get("features", [])
+    existing_data = pd.DataFrame([feature["attributes"] for feature in features])
+    st.write("Raw Features:", features)  # Debugging: Print raw response data
 
-        # Fallback: Apply local filtering if the dataset is still unfiltered
-        if len(existing_data) == len(features):  # Check if filtering was applied
-            st.warning("Server-side filtering did not work. Applying local filtering.")
-            existing_data = existing_data[existing_data["MSAGComm_L"].isin(search_cities)]
-
-        st.success(f"Loaded {len(existing_data)} records for search area: {', '.join(search_cities)}.")
-    else:
-        st.error(f"Failed to load data for {selected_city}. Status code: {response.status_code}")
-        st.write("Response Text:", response.text)  # Debugging: Print response text
+    # Apply local filtering
+    existing_data = existing_data[existing_data["MSAGComm_L"].isin(search_cities)]
+    st.success(f"Filtered {len(existing_data)} records locally for search area: {', '.join(search_cities)}.")
+else:
+    st.error(f"Failed to load data. Status code: {response.status_code}")
+    st.write("Response Text:", response.text)  # Debugging: Print response text
 
 
 

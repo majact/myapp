@@ -643,7 +643,7 @@ st.title("Proposed Name Checker")
 
 proposed_name = st.text_input("Enter the proposed street name:")
 # Dropdown for city selection
-selected_city = st.selectbox("Select the county:", ["Washington County", "Columbia County", "Clackamas County")])
+selected_city = st.selectbox("Select the county:", ["Washington County", "Columbia County", "Clackamas County"])
 if st.button("Check Name"):
     if proposed_name.strip():
         check_proposed_name(proposed_name.upper().strip(), selected_city.upper().strip())

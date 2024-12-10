@@ -16,6 +16,13 @@ city_search_areas = {
     # Add more cities and their respective search areas as needed
 }
 
+# Initialize base query parameters
+params = {
+    "where": "1=1",  # Default where clause to select all records (placeholder)
+    "outFields": "*",  # Retrieve all fields
+    "f": "json",  # Format the response as JSON
+}
+
 # Streamlit UI for user agency selection
 st.title("Proposed Name Checker")
 selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))

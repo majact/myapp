@@ -43,14 +43,7 @@ if selected_city:
     else:
         st.error(f"Failed to load data for {selected_city}. Status code: {response.status_code}")
 
-# Input for proposed name
-proposed_name = st.text_input("Enter the proposed street name:")
-if st.button("Check Name"):
-    if proposed_name.strip():
-        result = check_proposed_name(proposed_name.upper().strip())
-        st.success(result)  # Display the result
-    else:
-        st.warning("Please enter a valid street name.")
+
 
 
 
@@ -497,17 +490,24 @@ def check_proposed_name(proposed_name, platform="streamlit"):
 
 
 
-
-
-
-
-# User Input - calls check_proposed_name
-# Streamlit UI Integration
-st.title("Proposed Name Checker")
-
+# Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
-        check_proposed_name(proposed_name.upper().strip())
+        result = check_proposed_name(proposed_name.upper().strip())
+        st.success(result)  # Display the result
     else:
         st.warning("Please enter a valid street name.")
+
+
+
+# # User Input - calls check_proposed_name
+# # Streamlit UI Integration
+# st.title("Proposed Name Checker")
+
+# proposed_name = st.text_input("Enter the proposed street name:")
+# if st.button("Check Name"):
+#     if proposed_name.strip():
+#         check_proposed_name(proposed_name.upper().strip())
+#     else:
+#         st.warning("Please enter a valid street name.")

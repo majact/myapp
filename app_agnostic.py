@@ -27,6 +27,15 @@ else:
 
 print(f"Number of records in the feature layer: {len(features)}")
 
+
+# Mapping of communities to their neighboring communities
+community_neighbors = {
+    "TIGARD": ["TIGARD", "BEAVERTON", "SHERWOOD"],
+    "BEAVERTON": ["BEAVERTON", "TIGARD", "HILLSBORO"],
+    "FOREST GROVE": ["FOREST GROVE", "CORNELIUS", "HILLSBORO"]
+}
+
+
 # Lists for disallowed names based on category (e.g., business, city, county, arterial)
 # These lists will be used later in the script to filter out unwanted names
 
@@ -323,24 +332,88 @@ def is_disallowed_name(proposed_name):
 #     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
 
 
+# def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city):
+#     # Sanitize inputs
+#     proposed_name = str(proposed_name).strip()
+#     relevant_name_start = str(relevant_name_start).strip()
+#     selected_city = str(selected_city).strip()
+
+#     # Construct query parameters
+#     query_params = {
+#         "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='{selected_city}'",
+#         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
+#         "f": "json",
+#     }
+#     st.write(f"Constructed WHERE clause: {query_params['where']}")
+#     # Debugging: Print URL and params
+#     print(f"URL: {api_url}")
+#     print(f"Query Params Before Encoding: {query_params}")
+
+#     # Ensure proper encoding
+#     try:
+#         response = requests.get(api_url, params=query_params)
+#         response.raise_for_status()  # Raise an error for HTTP issues
+#     except requests.exceptions.RequestException as e:
+#         raise Exception(f"Error during API request: {e}")
+
+#     # Parse and process the response
+#     features = response.json().get("features", [])
+#     conflicts = []
+#     disallowed_prefixes = set()
+#     disallowed_ranges = []  # Change to a list of tuples
+#     disallowed_types = set()
+#     disallowed_cities = set()
+
+#     for feature in features:
+#         row = feature["attributes"]
+#         # Extract start and end values for the range
+#         try:
+#             min_addr = int(row["MIN_FromAddr_L"])
+#             max_addr = int(row["MAX_ToAddr_L"])
+#         except (ValueError, TypeError):
+#             raise ValueError(f"Invalid range data in row: {row}")
+
+#         existing_prefix = row.get("LSt_PreDir", "")
+#         existing_name = row["LSt_Name"]
+#         existing_type = row.get("LSt_Typ", "")
+#         existing_city = row.get("MSAGComm_L", "")
+
+#         if existing_name == proposed_name:
+#             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
+#             disallowed_types.add(existing_type)
+#             disallowed_cities.add(existing_city)
+#             disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
+#             disallowed_prefixes.add(existing_prefix)
+#         elif relevant_name_start and existing_name.startswith(relevant_name_start):
+#             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
+#             disallowed_prefixes.add(existing_prefix)
+#             disallowed_types.add(existing_type)
+#             disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
+#             disallowed_cities.add(existing_city)
+
+#     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
+
 def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city):
     # Sanitize inputs
     proposed_name = str(proposed_name).strip()
     relevant_name_start = str(relevant_name_start).strip()
     selected_city = str(selected_city).strip()
 
+    # Get the list of communities for the query
+    communities = community_neighbors.get(selected_city.upper(), [selected_city.upper()])
+    communities_filter = " OR ".join([f"MSAGComm_L='{community}'" for community in communities])
+
     # Construct query parameters
     query_params = {
-        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='{selected_city}'",
+        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND ({communities_filter})",
         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
         "f": "json",
     }
-    st.write(f"Constructed WHERE clause: {query_params['where']}")
-    # Debugging: Print URL and params
-    print(f"URL: {api_url}")
-    print(f"Query Params Before Encoding: {query_params}")
 
-    # Ensure proper encoding
+    # Debugging: Show the constructed WHERE clause in the Streamlit app
+    st.write(f"Constructed WHERE clause: {query_params['where']}")
+
+    # Execute the query
     try:
         response = requests.get(api_url, params=query_params)
         response.raise_for_status()  # Raise an error for HTTP issues
@@ -351,7 +424,7 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city)
     features = response.json().get("features", [])
     conflicts = []
     disallowed_prefixes = set()
-    disallowed_ranges = []  # Change to a list of tuples
+    disallowed_ranges = []
     disallowed_types = set()
     disallowed_cities = set()
 
@@ -373,17 +446,16 @@ def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city)
             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
             disallowed_types.add(existing_type)
             disallowed_cities.add(existing_city)
-            disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
+            disallowed_ranges.append((min_addr, max_addr))
             disallowed_prefixes.add(existing_prefix)
         elif relevant_name_start and existing_name.startswith(relevant_name_start):
             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
             disallowed_prefixes.add(existing_prefix)
             disallowed_types.add(existing_type)
-            disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
+            disallowed_ranges.append((min_addr, max_addr))
             disallowed_cities.add(existing_city)
 
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
-
 
 
 

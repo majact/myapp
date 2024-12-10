@@ -10,7 +10,6 @@ community_groups = {
     "TIGARD": ["TIGARD", "SHERWOOD", "TUALATIN"],
     "HILLSBORO": ["HILLSBORO"],
     "FOREST GROVE": ["FOREST GROVE"],
-    # Add other community groups as needed
 }
 
 # Streamlit UI
@@ -40,6 +39,7 @@ def fetch_data():
 
 # Load data
 regional_data = fetch_data()
+st.write(f"Loaded {len(regional_data)} total records from AGOL.")  # Debugging information
 
 if st.button("Check Name"):
     if not proposed_name.strip():

@@ -539,9 +539,12 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
 proposed_name = st.text_input("Enter the proposed street name:")
 if st.button("Check Name"):
     if proposed_name.strip():
-        st.write(f"Checking name: {proposed_name.upper().strip()}")  # Placeholder for name-checking logic
+        st.write(f"Checking name: {proposed_name.upper().strip()}")  # Debugging
+        result = check_proposed_name(proposed_name.upper().strip(), filtered_data)
+        st.write(result)  # Ensure the result is displayed
     else:
         st.warning("Please enter a valid street name.")
+
 
 
 

@@ -5,23 +5,24 @@ import requests
 # AGOL feature layer URL
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
 
-# City search areas
-city_search_areas = {
-    "TIGARD": ["TIGARD", "HILLSBORO", "SHERWOOD"],
-    "HILLSBORO": ["HILLSBORO", "CORNELIUS"],
-    "SHERWOOD": ["SHERWOOD", "TUALATIN"]
+# Define community groups
+community_groups = {
+    "TIGARD": ["TIGARD", "SHERWOOD", "TUALATIN"],
+    "HILLSBORO": ["HILLSBORO"],
+    "FOREST GROVE": ["FOREST GROVE"],
+    # Add other community groups as needed
 }
 
-# Streamlit interface
-st.title("Proof of Concept: Filter and Check Name (AGOL Integration)")
+# Streamlit UI
+st.title("Community-Based Street Name Checker")
 
-# Dropdown for mailing city selection
-selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))
+# Dropdown for community selection
+selected_community = st.selectbox("Select your community:", options=list(community_groups.keys()))
 
 # Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")
 
-# Function to fetch data from AGOL feature layer
+# Fetch data from AGOL
 @st.cache
 def fetch_data():
     params = {
@@ -37,26 +38,23 @@ def fetch_data():
         st.error(f"Failed to load data from AGOL. Status code: {response.status_code}")
         return pd.DataFrame()  # Return empty DataFrame if the request fails
 
-# Load data from AGOL
+# Load data
 regional_data = fetch_data()
 
 if st.button("Check Name"):
     if not proposed_name.strip():
         st.warning("Please enter a valid street name.")
     else:
-        # Filter data for the selected city
-        if not regional_data.empty and selected_city:
-            search_cities = city_search_areas[selected_city]
-            filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
+        # Filter data based on selected community
+        allowed_communities = community_groups[selected_community]
+        filtered_data = regional_data[regional_data["MSAGComm_L"].isin(allowed_communities)]
 
-            # Debugging: Display filtered data
-            st.write(f"Filtered Data (for {selected_city}):")
-            st.write(filtered_data)
+        # Debugging: Display filtered dataset
+        st.write(f"Filtered Data (for communities {', '.join(allowed_communities)}):")
+        st.write(filtered_data)
 
-            # Check if proposed name exists in filtered data
-            if proposed_name.upper() in filtered_data["LSt_Name"].values:
-                st.success(f"The street name '{proposed_name}' already exists in the selected area.")
-            else:
-                st.info(f"The street name '{proposed_name}' is available in the selected area.")
+        # Check if proposed name exists in the filtered data
+        if proposed_name.upper() in filtered_data["LSt_Name"].values:
+            st.success(f"The street name '{proposed_name}' already exists in the selected area.")
         else:
-            st.warning("No data to display. Check your dataset or city selection.")
+            st.info(f"The street name '{proposed_name}' is available in the selected area.")

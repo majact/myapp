@@ -49,13 +49,15 @@ selected_city = st.selectbox("Select your agency's mailing city:", options=list(
 regional_data = load_data()
 
 # Filter the dataset locally
+
 if not regional_data.empty and selected_city:
     search_cities = city_search_areas[selected_city]
     filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
     st.success(f"Filtered {len(filtered_data)} records for search area: {', '.join(search_cities)}.")
-    st.write(filtered_data)  # Display filtered data for debugging
+    st.write(f"Filtered data contains {len(filtered_data)} records. Sample: {filtered_data.head(3)}")  # Add this debug statement
 else:
     st.warning("No data to display. Check your dataset or city selection.")
+
 
 
 # Lists for disallowed names based on category (e.g., business, city, county, arterial)
@@ -535,7 +537,7 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
         display_feedback(success_message, status="success", platform=platform)
         return success_message
 
-st.write(f"Filtered data contains {len(filtered_data)} records. Sample: {filtered_data.head(3)}")
+
 
 
 # Input for proposed name

@@ -8,51 +8,24 @@ import re
 # Define the URL for the feature layer containing street data
 api_url = "https://services3.arcgis.com/90zScd1lzl2oLYC1/arcgis/rest/services/RCL_AddressAssignment_gdb/FeatureServer/0/query"
 
-# Define city-specific search areas
-city_search_areas = {
-    "TIGARD": ["TIGARD", "HILLSBORO", "SHERWOOD", "TUALATIN", "FOREST GROVE", "CORNELIUS"],
-    "HILLSBORO": ["HILLSBORO", "TIGARD", "FOREST GROVE", "CORNELIUS", "BEAVERTON"],
-    "SHERWOOD": ["SHERWOOD", "TIGARD", "TUALATIN", "WILSONVILLE"],
-    # Add more cities and their respective search areas as needed
-}
-
-# Initialize base query parameters
+# Query all data from the feature layer using the REST API
 params = {
-    "where": "1=1",  # Default where clause to select all records (placeholder)
+    "where": "1=1",  # Select all records
     "outFields": "*",  # Retrieve all fields
-    "f": "json",  # Format the response as JSON
+    "f": "json"  # Format the response as JSON
 }
 
-# Function to fetch the full dataset
-@st.cache
-def load_data():
-    params = {
-        "where": "1=1",  # Fetch all records
-        "outFields": "*",  # Retrieve all fields
-        "f": "json",  # Format the response as JSON
-    }
-    response = requests.get(api_url, params=params)
-    if response.status_code == 200:
-        features = response.json().get("features", [])
-        return pd.DataFrame([feature["attributes"] for feature in features])
-    else:
-        st.error(f"Failed to load data. Status code: {response.status_code}")
-        return pd.DataFrame()  # Return empty DataFrame if loading fails
+response = requests.get(api_url, params=params)  # Send GET request
+if response.status_code == 200:
+    # Convert response to Pandas DataFrame
+    features = response.json().get("features", [])
+    existing_data = pd.DataFrame([feature["attributes"] for feature in features])
+    print("Street data loaded successfully.")
+    st.write(f"Number of records in the feature layer: {len(features)}")
+else:
+    print(f"Failed to load data. Status code: {response.status_code}")
 
-# Streamlit Title
-st.title("Proposed Name Checker")
-
-# Dropdown for mailing city selection
-selected_city = st.selectbox("Select your agency's mailing city:", options=list(city_search_areas.keys()))
-
-# Load the full dataset once
-regional_data = load_data()
-
-
-
-
-
-
+print(f"Number of records in the feature layer: {len(features)}")
 
 # Lists for disallowed names based on category (e.g., business, city, county, arterial)
 # These lists will be used later in the script to filter out unwanted names
@@ -289,14 +262,76 @@ def is_disallowed_name(proposed_name):
 
 # called by check_proposed_name - checks conflicts with existing names
 # result provides the input parameters for format_conflict_results
-def detect_conflicts(proposed_name, relevant_name_start, filtered_data):
+# def detect_conflicts(proposed_name, relevant_name_start, api_url):
+#     # Sanitize inputs
+#     proposed_name = str(proposed_name).strip()
+#     relevant_name_start = str(relevant_name_start).strip()
+
+#     # Construct query parameters
+#     query_params = {
+#         "where": f"LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%'",
+#         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
+#         "f": "json",
+#     }
+
+#     # Debugging: Print URL and params
+#     print(f"URL: {api_url}")
+#     print(f"Query Params Before Encoding: {query_params}")
+
+#     # Ensure proper encoding
+#     try:
+#         response = requests.get(api_url, params=query_params)
+#         response.raise_for_status()  # Raise an error for HTTP issues
+#     except requests.exceptions.RequestException as e:
+#         raise Exception(f"Error during API request: {e}")
+
+#     # Parse and process the response
+#     features = response.json().get("features", [])
+#     conflicts = []
+#     disallowed_prefixes = set()
+#     disallowed_ranges = []  # Change to a list of tuples
+#     disallowed_types = set()
+#     disallowed_cities = set()
+
+#     for feature in features:
+#         row = feature["attributes"]
+#         # Extract start and end values for the range
+#         try:
+#             min_addr = int(row["MIN_FromAddr_L"])
+#             max_addr = int(row["MAX_ToAddr_L"])
+#         except (ValueError, TypeError):
+#             raise ValueError(f"Invalid range data in row: {row}")
+
+#         existing_prefix = row.get("LSt_PreDir", "")
+#         existing_name = row["LSt_Name"]
+#         existing_type = row.get("LSt_Typ", "")
+#         existing_city = row.get("MSAGComm_L", "")
+
+#         if existing_name == proposed_name:
+#             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
+#             disallowed_types.add(existing_type)
+#             disallowed_cities.add(existing_city)
+#             disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
+#             disallowed_prefixes.add(existing_prefix)
+#         elif relevant_name_start and existing_name.startswith(relevant_name_start):
+#             conflicts.append([f"{min_addr} - {max_addr}", existing_prefix, existing_name, existing_type, existing_city])
+#             disallowed_prefixes.add(existing_prefix)
+#             disallowed_types.add(existing_type)
+#             disallowed_ranges.append((min_addr, max_addr))  # Append tuple directly
+#             disallowed_cities.add(existing_city)
+
+#     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
+
+
+def detect_conflicts(proposed_name, relevant_name_start, api_url, selected_city):
     # Sanitize inputs
     proposed_name = str(proposed_name).strip()
     relevant_name_start = str(relevant_name_start).strip()
+    selected_city = str(selected_city).strip()
 
     # Construct query parameters
     query_params = {
-        "where": f"LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%'",
+        "where": f"(LSt_Name='{proposed_name}' OR LSt_Name LIKE '{relevant_name_start}%') AND MSAGComm_L='{selected_city}'",
         "outFields": "MIN_FromAddr_L,MAX_ToAddr_L,LSt_PreDir,LSt_Name,LSt_Typ,MSAGComm_L",
         "f": "json",
     }
@@ -348,6 +383,8 @@ def detect_conflicts(proposed_name, relevant_name_start, filtered_data):
             disallowed_cities.add(existing_city)
 
     return conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities
+
+
 
 
 # called by check_proposed_name, final step
@@ -477,18 +514,12 @@ def display_feedback(feedback, status="info", platform="streamlit"):
 #         display_feedback(success_message, status="success", platform=platform)
 #         return success_message
 
-
-def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
-    """
-    Enhanced version of check_proposed_name to work with filtered_data.
-    """
+def check_proposed_name(proposed_name, selected_city, platform="streamlit"):
+    # called by display_feedback
+    # calls 6 functions
     issues = []
     disapproved = False
-    st.write(f"check_proposed_name function started for: {proposed_name}")
-    # Add this check
-    if filtered_data.empty:
-        return "No relevant data found for the selected city. Please adjust your selection."
-    
+
     # Step 1: Check if the proposed name is disallowed
     disallowed_reason = is_disallowed_name(proposed_name)
     if disallowed_reason:
@@ -511,10 +542,8 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
     # Step 4: Detect conflicts if no disapproval
     if not disapproved:
         relevant_name_start = matches_namestart(proposed_name, name_starts)
-
-        # Modified detect_conflicts to use filtered_data
         conflicts, disallowed_prefixes, disallowed_ranges, disallowed_types, disallowed_cities = detect_conflicts(
-            proposed_name, relevant_name_start, filtered_data
+            proposed_name, relevant_name_start, api_url, selected_city
         )
         if conflicts:
             conflict_summary = format_conflict_results(proposed_name, conflicts, disallowed_prefixes,
@@ -527,48 +556,21 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
         display_feedback(full_feedback, status="error", platform=platform)
         return full_feedback
     else:
-        success_message = f"Proposed name '{proposed_name}' meets all criteria."
+        success_message = f"Proposed name '{proposed_name}' meets all criteria in {selected_city}."
         display_feedback(success_message, status="success", platform=platform)
         return success_message
 
 
 
+# User Input - calls check_proposed_name
+# Streamlit UI Integration
+st.title("Proposed Name Checker")
 
-# Input for proposed name
-# Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")
-
+# Dropdown for city selection
+selected_city = st.selectbox("Select the community:", ["Beaverton", "Forest Grove", "Tigard"])
 if st.button("Check Name"):
-    # Confirm user input
     if proposed_name.strip():
-        st.write(f"Checking name: {proposed_name.upper().strip()}")  # Debugging user input
-
-        # Filter data AFTER button click
-        if not regional_data.empty and selected_city:
-            search_cities = city_search_areas[selected_city]
-            filtered_data = regional_data[regional_data["MSAGComm_L"].isin(search_cities)]
-
-            # Display debug information about the filtering process
-            st.write(f"Filtered {len(filtered_data)} records for search area: {', '.join(search_cities)}.")
-
-            # Pass filtered data to the check_proposed_name function
-            result = check_proposed_name(proposed_name.upper().strip(), filtered_data)
-            st.write(result)  # Display the result
-        else:
-            st.warning("No data to display. Check your dataset or city selection.")
+        check_proposed_name(proposed_name.upper().strip(), selected_city.upper().strip())
     else:
         st.warning("Please enter a valid street name.")
-
-
-
-
-# # User Input - calls check_proposed_name
-# # Streamlit UI Integration
-# st.title("Proposed Name Checker")
-
-# proposed_name = st.text_input("Enter the proposed street name:")
-# if st.button("Check Name"):
-#     if proposed_name.strip():
-#         check_proposed_name(proposed_name.upper().strip())
-#     else:
-#         st.warning("Please enter a valid street name.")

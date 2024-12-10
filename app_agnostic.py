@@ -481,7 +481,7 @@ def display_feedback(feedback, status="info", platform="streamlit"):
 #         display_feedback(success_message, status="success", platform=platform)
 #         return success_message
 
-st.write(f"Filtered data contains {len(filtered_data)} records.")
+
 def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
     """
     Enhanced version of check_proposed_name to work with filtered_data.
@@ -534,6 +534,9 @@ def check_proposed_name(proposed_name, filtered_data, platform="streamlit"):
         success_message = f"Proposed name '{proposed_name}' meets all criteria."
         display_feedback(success_message, status="success", platform=platform)
         return success_message
+
+st.write(f"Filtered data contains {len(filtered_data)} records. Sample: {filtered_data.head(3)}")
+
 
 # Input for proposed name
 proposed_name = st.text_input("Enter the proposed street name:")

@@ -607,12 +607,12 @@ def check_proposed_name(proposed_name, selected_city, platform="streamlit"):
         issues.append(banned_start_reason)
         disapproved = True
 
-    # Step 3: Check spelling and pronunciation
-    status, feedback = evaluate_word(proposed_name, repeated_letter_exceptions, problematic_combination_exceptions,
-                                     disallowed_ends_with, ends_with_exceptions, homophones)
-    if status == "Disapproved":
-        issues.append(feedback)
-        disapproved = True
+    # # Step 3: Check spelling and pronunciation
+    # status, feedback = evaluate_word(proposed_name, repeated_letter_exceptions, problematic_combination_exceptions,
+    #                                  disallowed_ends_with, ends_with_exceptions, homophones)
+    # if status == "Disapproved":
+    #     issues.append(feedback)
+    #     disapproved = True
 
     # Step 4: Detect conflicts if no disapproval
     if not disapproved:
